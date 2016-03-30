@@ -50,9 +50,9 @@
 			content: " ";
 		}
 		.board-wrap > .board-row > .board-cell{
-			width: 5.263157894736842%;
+			width: 5.555555555555556%;
 			border-right: 1px solid #000;
-			padding-bottom: 5.263157894736842%;
+			padding-bottom: 5.555555555555556%;
 			float:left;
 			position: relative;
 		}
@@ -63,8 +63,8 @@
 			border-bottom: 1px solid #000;
 		}
 		.doll{
-			width: 39px;
-			height: 39px;
+			width: 41px;
+			height: 41px;
 			border-radius: 50%;
 			position: absolute;
 			cursor: pointer;
@@ -76,13 +76,16 @@
 			opacity: 1;
 		}
 		.doll.top{
-			top: -20px;
+			top: -21px;
+		}
+		.doll.bottom{
+			bottom: -21px;
 		}
 		.doll.left{
-			left: -20px;
+			left: -21px;
 		}
 		.doll.right{
-			right: -20px;
+			right: -21px;
 		}
 		.doll.white{
 			background-color: #eee;
@@ -129,13 +132,22 @@
 	);
 
 	function boardInit(){
-		for(var x=0;x<19;x++){
+		for(var x=0;x<18;x++){
 			var $boardRow = $("<div class='board-row'>");
-			for(var y=0;y<19;y++){
-				if(y != 18){
-					$boardRow.append("<div class='board-cell'><div data-x='"+x+"' data-y='"+y+"' class='doll ghost top left "+dollColor+"'></div></div>");
-				}else {
-					$boardRow.append("<div class='board-cell'><div data-x='" + x + "' data-y='" + y + "' class='doll ghost top left "+dollColor+"'></div><div data-x='" + x + "' data-y='" + (y+1) + "' class='doll ghost top right "+dollColor+"'></div></div>");
+			for(var y=0;y<18;y++){
+				if(y != 17){
+					if(x != 17){
+						$boardRow.append("<div class='board-cell'><div data-x='"+x+"' data-y='"+y+"' class='doll ghost top left "+dollColor+"'></div></div>");
+					}else{
+						$boardRow.append("<div class='board-cell'><div data-x='"+x+"' data-y='"+y+"' class='doll ghost top left "+dollColor+"'></div><div data-x='18' data-y='"+y+"' class='doll ghost bottom left "+dollColor+"'></div></div>");
+					}
+				}else{
+					if(x != 17){
+						$boardRow.append("<div class='board-cell'><div data-x='" + x + "' data-y='" + y + "' class='doll ghost top left "+dollColor+"'></div><div data-x='" + x + "' data-y='18' class='doll ghost top right "+dollColor+"'></div></div>");
+					}else{
+						$boardRow.append("<div class='board-cell'><div data-x='" + x + "' data-y='" + y + "' class='doll ghost top left "+dollColor+"'></div><div data-x='18' data-y='"+y+"' class='doll ghost bottom left "+dollColor+"'></div><div data-x='" + x + "' data-y='18' class='doll ghost top right "+dollColor+"'></div><div data-x='18' data-y='18' class='doll ghost bottom right "+dollColor+"'></div></div>");
+					}
+					
 				}
 			}
 			$(".board-wrap").append($boardRow);
@@ -183,6 +195,7 @@
 		//수직 아래쪽방향 검사 ↓
 		goalCnt = 0;
 		for(var i=0; i<19; i++){
+			if(x == 18) break;
 			if(typeof gameStats[x+i][y] != "undefined"){
 				if(gameStats[x+i][y] == color){
 					goalCnt++;
@@ -220,6 +233,7 @@
 		//대각선 오른쪽 아래방향 검사 ↘
 		goalCnt = 0;
 		for(var i=0; i<19; i++){
+			if(y == 18 || x == 18) break;
 			if(typeof gameStats[x+i][y+i] != "undefined"){
 				if(gameStats[x+i][y+i] == color){
 					goalCnt++;
@@ -276,6 +290,7 @@
 		//대각선 왼쪽 아래방향 검사 ↙
 		goalCnt = 0;
 		for(var i=0; i<19; i++){
+			if(x == 18 || y == 0) break;
 			if(typeof gameStats[x+i][y-i] != "undefined"){
 				if(gameStats[x+i][y-i] == color){
 					goalCnt++;
@@ -326,9 +341,18 @@
 	});
 
 	socket.on('doll_receive',function(data){
-		var $cell = $(".board-wrap").children(".board-row").eq(data.x).children(".board-cell").eq(data.y).children(".doll");
-		if(data.y == 19){
-			$cell = $(".board-wrap").children(".board-row").eq(data.x).children(".board-cell").eq(data.y-1).children(".doll").eq(1);
+		var $cell = $(".board-wrap").children(".board-row").eq(data.x).children(".board-cell").eq(data.y).children(".doll").eq(0);
+		if(data.x == 18 && data.y != 18){
+			$cell = $(".board-wrap").children(".board-row").eq(17).children(".board-cell").eq(data.y).children(".doll").eq(1);
+		}
+		if(data.y == 18){
+			if(data.x == 18){
+				$cell = $(".board-wrap").children(".board-row").eq(17).children(".board-cell").eq(17).children(".doll").eq(3);
+			}else if(data.x == 17){
+				$cell = $(".board-wrap").children(".board-row").eq(17).children(".board-cell").eq(17).children(".doll").eq(2);
+			}else{
+				$cell = $(".board-wrap").children(".board-row").eq(data.x).children(".board-cell").eq(data.y-1).children(".doll").eq(1);
+			}
 		}
 		console.log($cell);
 		if($cell.hasClass("white")){
