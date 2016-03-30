@@ -142,19 +142,19 @@
 		}
 	}
 
-	function boardJudgment(x, y){
+	function boardJudgment(x, y, color){
 		var goalCnt = 0;
 
 		//수평 오른쪽방향 검사 →
 		for(var i=0; i<19; i++){
 			if(typeof gameStats[x][y+i] != "undefined"){
-				if(gameStats[x][y+i] == dollColor){
+				if(gameStats[x][y+i] == color){
 					goalCnt++;
 				}else{
 					break;
 				}
 				if(goalCnt == 5){
-					if(gameStats[x][y-1] == dollColor) break;
+					if(gameStats[x][y-1] == color) break;
 					alert("!!");
 					break;
 					return false;
@@ -166,13 +166,13 @@
 		goalCnt = 0;
 		for(var i=0; i<19; i++){
 			if(typeof gameStats[x][y-i] != "undefined"){
-				if(gameStats[x][y-i] == dollColor){
+				if(gameStats[x][y-i] == color){
 					goalCnt++;
 				}else{
 					break;
 				}
 				if(goalCnt == 5){
-					if(gameStats[x][y+1] == dollColor) break;
+					if(gameStats[x][y+1] == color) break;
 					alert("!!");
 					break;
 					return false;
@@ -184,13 +184,13 @@
 		goalCnt = 0;
 		for(var i=0; i<19; i++){
 			if(typeof gameStats[x+i][y] != "undefined"){
-				if(gameStats[x+i][y] == dollColor){
+				if(gameStats[x+i][y] == color){
 					goalCnt++;
 				}else{
 					break;
 				}
 				if(goalCnt == 5){
-					if(x != 0 && gameStats[x-1][y] == dollColor) break;
+					if(x != 0 && gameStats[x-1][y] == color) break;
 					alert("!!");
 					break;
 					return false;
@@ -203,13 +203,13 @@
 		for(var i=0; i<19; i++){
 			if(x-i < 0) break;
 			if(typeof gameStats[x-i][y] != "undefined"){
-				if(gameStats[x-i][y] == dollColor){
+				if(gameStats[x-i][y] == color){
 					goalCnt++;
 				}else{
 					break;
 				}
 				if(goalCnt == 5){
-					if(gameStats[x+1][y] == dollColor) break;
+					if(gameStats[x+1][y] == color) break;
 					alert("!!");
 					break;
 					return false;
@@ -221,13 +221,13 @@
 		goalCnt = 0;
 		for(var i=0; i<19; i++){
 			if(typeof gameStats[x+i][y+i] != "undefined"){
-				if(gameStats[x+i][y+i] == dollColor){
+				if(gameStats[x+i][y+i] == color){
 					goalCnt++;
 				}else{
 					break;
 				}
 				if(goalCnt == 5){
-					if(gameStats[x-1][y-1] == dollColor) break;
+					if(gameStats[x-1][y-1] == color) break;
 					alert("!!");
 					break;
 					return false;
@@ -240,13 +240,13 @@
 		for(var i=0; i<19; i++){
 			if(x-i < 0) break;
 			if(typeof gameStats[x-i][y+i] != "undefined"){
-				if(gameStats[x-i][y+i] == dollColor){
+				if(gameStats[x-i][y+i] == color){
 					goalCnt++;
 				}else{
 					break;
 				}
 				if(goalCnt == 5){
-					if(gameStats[x+1][y-1] == dollColor) break;
+					if(gameStats[x+1][y-1] == color) break;
 					alert("!!");
 					break;
 					return false;
@@ -259,13 +259,13 @@
 		for(var i=0; i<19; i++) {
 			if (x - i < 0) break;
 			if (typeof gameStats[x - i][y - i] != "undefined") {
-				if (gameStats[x - i][y - i] == dollColor) {
+				if (gameStats[x - i][y - i] == color) {
 					goalCnt++;
 				} else {
 					break;
 				}
 				if (goalCnt == 5) {
-					if(gameStats[x+1][y+1] == dollColor) break;
+					if(gameStats[x+1][y+1] == color) break;
 					alert("!!");
 					break;
 					return false;
@@ -277,13 +277,13 @@
 		goalCnt = 0;
 		for(var i=0; i<19; i++){
 			if(typeof gameStats[x+i][y-i] != "undefined"){
-				if(gameStats[x+i][y-i] == dollColor){
+				if(gameStats[x+i][y-i] == color){
 					goalCnt++;
 				}else{
 					break;
 				}
 				if(goalCnt == 5){
-					if(gameStats[x-1][y+1] == dollColor) break;
+					if(gameStats[x-1][y+1] == color) break;
 					alert("!!");
 					break;
 					return false;
@@ -343,7 +343,7 @@
 			$cell.removeClass("ghost");
 		}
 		gameStats[data.x][data.y] = data.doll_color;
-		boardJudgment(data.x, data.y);
+		boardJudgment(data.x, data.y, data.doll_color);
 	});
 </script>
 </body>
