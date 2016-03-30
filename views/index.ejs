@@ -35,8 +35,7 @@
 		}
 		.board-wrap{
 			width: 100%;
-			/*background-color: #F8C91E;*/
-			background-color: #fff;
+			background-color: #F8C91E;
 			padding: 25px;
 		}
 		.board-wrap > .board-row{
@@ -103,7 +102,9 @@
 <script src="https://cdn.socket.io/socket.io-1.3.7.js"></script>
 <script type="text/javascript">
 	var checkPageLeave = false;
+	var turnCheck = true;
 
+	var lastDollPosition;
 	var dollColor = "white";
 	var gameStats = new Array(
 			new Array("","","","","","","","","","","","","","","","","","",""),
@@ -132,9 +133,9 @@
 			var $boardRow = $("<div class='board-row'>");
 			for(var y=0;y<19;y++){
 				if(y != 18){
-					$boardRow.append("<div class='board-cell'><div data-x='"+x+"' data-y='"+y+"' class='doll ghost top left white'></div></div>");
+					$boardRow.append("<div class='board-cell'><div data-x='"+x+"' data-y='"+y+"' class='doll ghost top left "+dollColor+"'></div></div>");
 				}else {
-					$boardRow.append("<div class='board-cell'><div data-x='" + x + "' data-y='" + y + "' class='doll ghost top left white'></div><div data-x='" + x + "' data-y='" + (y+1) + "' class='doll ghost top right white'></div></div>");
+					$boardRow.append("<div class='board-cell'><div data-x='" + x + "' data-y='" + y + "' class='doll ghost top left "+dollColor+"'></div><div data-x='" + x + "' data-y='" + (y+1) + "' class='doll ghost top right "+dollColor+"'></div></div>");
 				}
 			}
 			$(".board-wrap").append($boardRow);
@@ -297,33 +298,52 @@
 	});
 
 	$(function(){
-		boardInit();
 
-		$(".board-cell").mousemove(function(event){
-			/*if(event.offsetX < 15 && event.offsetY < 15){
-				$(this).children(".ghost.left.top").show();
-			}else{
-				$(this).children(".ghost").hide();
-			}*/
-		});
-		$(".ghost").hover(function(){
-			$(this).addClass("on");
-		},function(){
-			$(this).removeClass("on");
-		});
-		$(".ghost").click(function(){
-			$(this).removeClass("ghost");
-			var x = $(this).data("x");
-			var y = $(this).data("y");
-			gameStats[x][y] = "white";
-			boardJudgment(x, y);
-		});
+	});
+
+	$(document).on("mouseenter", ".ghost", function(){
+		$(this).addClass("on");
+	});
+
+	$(document).on("mouseleave", ".ghost", function(){
+		$(this).removeClass("on");
+	});
+
+	$(document).on("click", ".ghost", function(){
+		//$(this).removeClass("ghost");
+		var x = $(this).data("x");
+		var y = $(this).data("y");
+		//gameStats[x][y] = "white";
+		socket.emit('doll_put',{'x':x,'y':y,'doll_color':dollColor});
 	});
 
 	var socket = io();
 
 	socket.on('omok_init',function(data){
-		console.log(data);
+		checkPageLeave = true;
+		dollColor = data.doll_color;
+		boardInit();
+	});
+
+	socket.on('doll_receive',function(data){
+		var $cell = $(".board-wrap").children(".board-row").eq(data.x).children(".board-cell").eq(data.y).children(".doll");
+		if(data.y == 19){
+			$cell = $(".board-wrap").children(".board-row").eq(data.x).children(".board-cell").eq(data.y-1).children(".doll").eq(1);
+		}
+		console.log($cell);
+		if($cell.hasClass("white")){
+			if(data.doll_color == "black"){
+				$cell.removeClass("white").addClass("black");
+			}
+			$cell.removeClass("ghost");
+		}else{
+			if(data.doll_color == "white"){
+				$cell.removeClass("black").addClass("white");
+			}
+			$cell.removeClass("ghost");
+		}
+		gameStats[data.x][data.y] = data.doll_color;
+		boardJudgment(data.x, data.y);
 	});
 </script>
 </body>

@@ -40,16 +40,62 @@ sharedsession = require("express-socket.io-session");
 app.use(session);
 
 var rooms = [];
+var connectCounter = 0;
+var dollColor = "white";
+var latestTurnId = "";
 
 io.use(sharedsession(session));
 
 /*** Socket.IO 추가 ***/
 io.on('connection',function(socket){
 
-	socket.emit("omok_init", {id:socket.id});
+	connectCounter++;
 
+	socket.room = "test";
+	socket.join("test");
+
+
+	if(connectCounter%2 != 0){
+		dollColor = "black";
+	}else{
+		dollColor = "white";
+	}
+
+
+	/** 게임방 초기화 **/
+	socket.emit("omok_init", {id:socket.id,doll_color:dollColor});
+
+	/** 돌 처리 **/
+	socket.on('doll_put',function(data){
+		var date = new Date();
+		var time;
+		if (date.getHours() <= 12) {
+			time = "오전 "+date.getHours()+":"+parseMinute(date.getMinutes());
+		}else {
+			time = "오후 "+(date.getHours()-12)+":"+parseMinute(date.getMinutes());
+		}
+
+		if(latestTurnId != socket.id){
+			io.sockets.in(socket.room).emit('doll_receive', {x:data.x,y:data.y,doll_color:data.doll_color,id:socket.id,time:time});
+			latestTurnId = socket.id;
+		}
+	});
+
+
+	console.log(connectCounter%2);
+});
+
+io.on('disconnect',function(socket) {
 
 });
+
+function parseMinute(minute){
+	if(minute < 10) {
+		return "0" + minute;
+	}else{
+		return minute;
+	}
+}
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
