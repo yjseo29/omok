@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="Author" content="">
+	<meta name="Keywords" content="">
+	<meta name="Description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>omok</title>
+	<link href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet">
+	<style type="text/css">
+		html{
+			-webkit-font-smoothing: antialiased;
+			min-height: 100%;
+		}
+		body{
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			font-family: "Noto Sans","맑은고딕","Malgun Gothic","Apple SD Gothic Neo","돋움",dotum,Arial,sans-serif;
+			font-weight: 400;
+			font-size: 14px;
+			color: #333;
+		}
+		*{
+			-webkit-box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			box-sizing: border-box;
+		}
+		*:before, *:after {
+			-webkit-box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			box-sizing: border-box;
+		}
+		.board-wrap{
+			width: 100%;
+			/*background-color: #F8C91E;*/
+			background-color: #fff;
+			padding: 25px;
+		}
+		.board-wrap > .board-row{
+			width: 100%;
+			border-top: 1px solid #000;
+			border-left: 1px solid #000;
+			border-right: 1px solid #000;
+		}
+		.board-wrap > .board-row:after{
+			clear: both;
+			display: table;
+			content: " ";
+		}
+		.board-wrap > .board-row > .board-cell{
+			width: 5.263157894736842%;
+			border-right: 1px solid #000;
+			padding-bottom: 5.263157894736842%;
+			float:left;
+			position: relative;
+		}
+		.board-wrap > .board-row > .board-cell:last-child{
+			border-right: 0;
+		}
+		.board-wrap > .board-row:last-child > .board-cell{
+			border-bottom: 1px solid #000;
+		}
+		.doll{
+			width: 39px;
+			height: 39px;
+			border-radius: 50%;
+			position: absolute;
+			cursor: pointer;
+		}
+		.doll.ghost{
+			opacity: 0;
+		}
+		.doll.ghost.on{
+			opacity: 1;
+		}
+		.doll.top{
+			top: -20px;
+		}
+		.doll.left{
+			left: -20px;
+		}
+		.doll.right{
+			right: -20px;
+		}
+		.doll.white{
+			background-color: #eee;
+		}
+		.doll.black{
+			background-color: #000;
+		}
+	</style>
+</head>
+<body>
+<div style="width:800px;margin:25px auto;">
+	<div class="board-wrap">
+
+	</div>
+</div>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="https://cdn.socket.io/socket.io-1.3.7.js"></script>
+<script type="text/javascript">
+	var checkPageLeave = false;
+
+	var dollColor = "white";
+	var gameStats = new Array(
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","",""),
+			new Array("","","","","","","","","","","","","","","","","","","")
+	);
+
+	function boardInit(){
+		for(var x=0;x<19;x++){
+			var $boardRow = $("<div class='board-row'>");
+			for(var y=0;y<19;y++){
+				if(y != 18){
+					$boardRow.append("<div class='board-cell'><div data-x='"+x+"' data-y='"+y+"' class='doll ghost top left white'></div></div>");
+				}else {
+					$boardRow.append("<div class='board-cell'><div data-x='" + x + "' data-y='" + y + "' class='doll ghost top left white'></div><div data-x='" + x + "' data-y='" + (y+1) + "' class='doll ghost top right white'></div></div>");
+				}
+			}
+			$(".board-wrap").append($boardRow);
+		}
+	}
+
+	function boardJudgment(x, y){
+		var goalCnt = 0;
+
+		//수평 오른쪽방향 검사 →
+		for(var i=0; i<19; i++){
+			if(typeof gameStats[x][y+i] != "undefined"){
+				if(gameStats[x][y+i] == dollColor){
+					goalCnt++;
+				}else{
+					break;
+				}
+				if(goalCnt == 5){
+					if(gameStats[x][y-1] == dollColor) break;
+					alert("!!");
+					break;
+					return false;
+				}
+			}
+		}
+
+		//수평 왼쪽방향 검사 ←
+		goalCnt = 0;
+		for(var i=0; i<19; i++){
+			if(typeof gameStats[x][y-i] != "undefined"){
+				if(gameStats[x][y-i] == dollColor){
+					goalCnt++;
+				}else{
+					break;
+				}
+				if(goalCnt == 5){
+					if(gameStats[x][y+1] == dollColor) break;
+					alert("!!");
+					break;
+					return false;
+				}
+			}
+		}
+
+		//수직 아래쪽방향 검사 ↓
+		goalCnt = 0;
+		for(var i=0; i<19; i++){
+			if(typeof gameStats[x+i][y] != "undefined"){
+				if(gameStats[x+i][y] == dollColor){
+					goalCnt++;
+				}else{
+					break;
+				}
+				if(goalCnt == 5){
+					if(x != 0 && gameStats[x-1][y] == dollColor) break;
+					alert("!!");
+					break;
+					return false;
+				}
+			}
+		}
+
+		//수직 위쪽방향 검사 ↑
+		goalCnt = 0;
+		for(var i=0; i<19; i++){
+			if(x-i < 0) break;
+			if(typeof gameStats[x-i][y] != "undefined"){
+				if(gameStats[x-i][y] == dollColor){
+					goalCnt++;
+				}else{
+					break;
+				}
+				if(goalCnt == 5){
+					if(gameStats[x+1][y] == dollColor) break;
+					alert("!!");
+					break;
+					return false;
+				}
+			}
+		}
+
+		//대각선 오른쪽 아래방향 검사 ↘
+		goalCnt = 0;
+		for(var i=0; i<19; i++){
+			if(typeof gameStats[x+i][y+i] != "undefined"){
+				if(gameStats[x+i][y+i] == dollColor){
+					goalCnt++;
+				}else{
+					break;
+				}
+				if(goalCnt == 5){
+					if(gameStats[x-1][y-1] == dollColor) break;
+					alert("!!");
+					break;
+					return false;
+				}
+			}
+		}
+
+		//대각선 오른쪽 위에방향 검사 ↗
+		goalCnt = 0;
+		for(var i=0; i<19; i++){
+			if(x-i < 0) break;
+			if(typeof gameStats[x-i][y+i] != "undefined"){
+				if(gameStats[x-i][y+i] == dollColor){
+					goalCnt++;
+				}else{
+					break;
+				}
+				if(goalCnt == 5){
+					if(gameStats[x+1][y-1] == dollColor) break;
+					alert("!!");
+					break;
+					return false;
+				}
+			}
+		}
+
+		//대각선 왼쪽 위에방향 검사 ↖
+		goalCnt = 0;
+		for(var i=0; i<19; i++) {
+			if (x - i < 0) break;
+			if (typeof gameStats[x - i][y - i] != "undefined") {
+				if (gameStats[x - i][y - i] == dollColor) {
+					goalCnt++;
+				} else {
+					break;
+				}
+				if (goalCnt == 5) {
+					if(gameStats[x+1][y+1] == dollColor) break;
+					alert("!!");
+					break;
+					return false;
+				}
+			}
+		}
+
+		//대각선 왼쪽 아래방향 검사 ↙
+		goalCnt = 0;
+		for(var i=0; i<19; i++){
+			if(typeof gameStats[x+i][y-i] != "undefined"){
+				if(gameStats[x+i][y-i] == dollColor){
+					goalCnt++;
+				}else{
+					break;
+				}
+				if(goalCnt == 5){
+					if(gameStats[x-1][y+1] == dollColor) break;
+					alert("!!");
+					break;
+					return false;
+				}
+			}
+		}
+	}
+
+	/** 페이지 나갈시 경고창 띄우기 **/
+	$(window).on("beforeunload", function(){
+		if(checkPageLeave) return "게임에 참여중입니다.\n페이지를 나가게되면 게임에서 나가게됩니다";
+	});
+
+	$(function(){
+		boardInit();
+
+		$(".board-cell").mousemove(function(event){
+			/*if(event.offsetX < 15 && event.offsetY < 15){
+				$(this).children(".ghost.left.top").show();
+			}else{
+				$(this).children(".ghost").hide();
+			}*/
+		});
+		$(".ghost").hover(function(){
+			$(this).addClass("on");
+		},function(){
+			$(this).removeClass("on");
+		});
+		$(".ghost").click(function(){
+			$(this).removeClass("ghost");
+			var x = $(this).data("x");
+			var y = $(this).data("y");
+			gameStats[x][y] = "white";
+			boardJudgment(x, y);
+		});
+	});
+
+	var socket = io();
+
+	socket.on('omok_init',function(data){
+		console.log(data);
+	});
+</script>
+</body>
+</html>
