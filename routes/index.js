@@ -1,9 +1,21 @@
-var express = require('express');
-var router = express.Router();
+var express = require('express')
+   ,router = express.Router()
+   ,fs = require('fs');
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+exports.lobbyGet = function(req, res){
+	if(req.session.username){
+		res.render('lobby');
+	}else{
+		res.redirect('/');
+	}
+};
 
-module.exports = router;
+exports.lobbyPost = function(req, res) {
+	if(req.body.username){
+		req.session.username = req.body.username;
+		console.log(req.session.username);
+		res.render('lobby');
+	}else{
+		res.redirect('/');
+	}
+};
