@@ -1,3 +1,4 @@
+@import url(http://spoqa.github.io/spoqa-han-sans/css/SpoqaHanSans-kr.css);
 html{
     -webkit-font-smoothing: antialiased;
     min-height: 100%;
@@ -6,7 +7,7 @@ body{
     width: 100%;
     height: 100%;
     margin: 0;
-    font-family: "Noto Sans","¸¼Àº°íµñ","Malgun Gothic","Apple SD Gothic Neo","µ¸¿ò",dotum,Arial,sans-serif;
+    font-family: "Spoqa Han Sans","ë§‘ì€ê³ ë”•","Malgun Gothic","Apple SD Gothic Neo","ë‹ì›€",dotum,Arial,sans-serif;
     font-weight: 400;
     font-size: 14px;
     color: #333;
@@ -37,4 +38,81 @@ button, input, optgroup, select, textarea {
 }
 button:hover{
     cursor: pointer;
+}
+a:focus{ outline:none; } :focus{ outline-color: transparent; outline-style: none; }.btn:focus{ outline: none; outline-style: none; }select:focus,button:focus{ outline: none; outline-style: none; }
+::-webkit-input-placeholder {
+    color: #bdc4c9;
+}
+
+:-moz-placeholder { /* Firefox 18- */
+    color: #bdc4c9;
+}
+
+::-moz-placeholder {  /* Firefox 19+ */
+    color: #bdc4c9;
+}
+
+:-ms-input-placeholder {
+    color: #bdc4c9;
+}
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+    color: inherit;
+}
+.modal{
+    position: absolute;
+    background-color: rgba(0,0,0, 0.35);
+    display: none;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+}
+.modal-inner{
+    display: table-cell;
+    vertical-align: middle;
+}
+.modal-content{
+    border-radius: 3px;
+    box-shadow: 0 2px 26px rgba(0, 0, 0, .3), 0 0 0 1px rgba(0, 0, 0, .1);
+    padding: 15px;
+    background: #fff;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+.modal-content > .title{
+    color: #4e5665;
+    font-weight: 400;
+    margin-bottom: 25px;
+}
+.form-control{
+    border: 1px solid rgba(0, 0, 0, .20);
+    color: rgba(0, 0, 0, 1);
+    font-size: 17px;
+    height: 42px;
+    padding: 0 16px;
+    width: 245px;
+    border-radius: 4px;
+    outline: none;
+}
+.form-control.block{
+    width: 100%;
+    display: block;
+}
+.form-control:focus{
+    border: 1px solid #0084ff;
+}
+.btn-white{
+    margin-top:15px;
+    color:#0084ff;
+    border:0;
+    outline:none;
+    font-size:20px;
+    background:#fff;
 }

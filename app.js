@@ -38,10 +38,7 @@ var sharedsession = require("express-socket.io-session");
 app.use(session);
 
 var rooms = [];
-var connectCounter = 0;
 var lobbyCounter = 0;
-var dollColor = "white";
-var latestTurnId = "";
 
 io.use(sharedsession(session));
 
@@ -50,7 +47,7 @@ app.get('/', function(req, res, next) {
 	if(req.session.username){
 		res.redirect('/lobby');
 	}else{
-		res.render('home', {'gameUrl':req.params.gameUrl});
+		res.render('home', {'gameUrl':req.query.gameUrl});
 	}
 });
 
@@ -70,66 +67,53 @@ app.get('/game/:url', function(req, res) {
 		});
 	}
 });
-app.post('/create', function(req, res) {
-	var url = makeUrl();
-
-	rooms[url] = new Object();
-	rooms[url].title = req.body.title;
-	rooms[url].passwd = req.body.passwd;
-	rooms[url].url = url;
-	rooms[url].user_list = new Object();
-
-	res.redirect('/game/'+url);
-});
 
 /*** Socket.IO 추가 ***/
 io.on('connection',function(socket){
-	connectCounter++;
 
 	/** 로비 초기화 **/
 	socket.on("join_lobby", function(data){
+		socket.username = data.username;
+		socket.room = "lobby";
+		socket.join("lobby");
 		lobbyCounter++;
 		var roomList = new Array();
 		for(var room in rooms){
 			roomList.push(rooms[room]);
 		}
-		io.sockets.emit('list_room',{rooms:roomList});
+		io.sockets.in("lobby").emit('list_room',{rooms:roomList});
+		io.sockets.in("lobby").emit('lobby_usercnt',{cnt:lobbyCounter});
 	});
-
-
-	if(connectCounter%2 != 0){
-		dollColor = "black";
-	}else{
-		dollColor = "white";
-	}
 
 	/** 방 생성 **/
 	socket.on("create_room", function(data){
-		var url = data.url;
+		var url = makeUrl();
 
 		if(rooms[url] == undefined) {
 			rooms[url] = new Object();
 			rooms[url].title = data.title;
 			rooms[url].url = url;
+			rooms[url].last_turn = "";
 			rooms[url].passwd = data.passwd;
+			rooms[url].username = socket.username;
+			rooms[url].state = "ready";
+			rooms[url].time = getTime();
 			rooms[url].user_list = new Object();
-
-			/*rooms[url].user_list[socket.id] = new Object();
-			rooms[url].user_list[socket.id].nickname = socket.username;
-			rooms[url].user_list[socket.id].type = "black";
-
-			io.sockets.in(url).emit('broadcast_msg', {msg:socket.username+"님이 방에 입장하였습니다",type:"notify"});*/
 
 			//방목록 업데이트
 			var roomList = new Array();
 			for(var room in rooms){
 				roomList.push(rooms[room]);
 			}
-			io.sockets.emit('list_room',{rooms:roomList});
+			io.sockets.in('lobby').emit('list_room',{rooms:roomList});
+
+			//방생성 결과 응답
+			socket.emit('res_create_room', {result:true, url:url});
 
 			console.log(rooms);
 		}else{
-
+			//방생성 결과 응답
+			socket.emit('res_create_room', {result:false, url:url});
 		}
 	});
 
@@ -144,16 +128,36 @@ io.on('connection',function(socket){
 
 			rooms[url].user_list[socket.id] = new Object();
 			rooms[url].user_list[socket.id].nickname = socket.username;
-			if(Object.keys(rooms[url].user_list).length == 0){
+			if(Object.keys(rooms[url].user_list).length == 1){
 				rooms[url].user_list[socket.id].type = "black";
-			}else if(Object.keys(rooms[url].user_list).length == 1){
-				rooms[url].user_list[socket.id].type = "white";
+				rooms[url].state = "ready";
+			}else if(Object.keys(rooms[url].user_list).length == 2){
+				if(rooms[url].user_list[Object.keys(rooms[url].user_list)[0]].type == "white"){
+					rooms[url].user_list[socket.id].type = "black";
+				}else{
+					rooms[url].user_list[socket.id].type = "white";
+				}
+				rooms[url].state = "start";
 			}else{
 				rooms[url].user_list[socket.id].type = "viewer";
 			}
-			io.sockets.in(url).emit('broadcast_msg', {msg:socket.username+"님이 방에 입장하였습니다",type:"notify"});
+			io.sockets.in(url).emit('broadcast_msg', {msg:socket.username+"님이 방에 입장하였습니다.",type:"system",time:getTime()});
+			socket.emit('init_game', {result:true,doll_color:rooms[url].user_list[socket.id].type});
+
+			//게임상황 업데이트
+			io.sockets.in(url).emit('state_game', {state:rooms[url].state,time:getTime()});
+
+			//유저목록 업데이트
+			var userList = new Array();
+			for(var user in rooms[url].user_list){
+				if (rooms[url].user_list.hasOwnProperty(user)) {
+					userList.push(rooms[url].user_list[user]);
+				}
+			}
+			io.sockets.in(url).emit('user_list', {users:userList});
 		}else{
 			console.log("!! 존재하지않는 방");
+			io.sockets.in(url).emit('init_game', {result:false});
 		}
 	});
 
@@ -167,46 +171,80 @@ io.on('connection',function(socket){
 		socket.username = data.nickname; //소켓 네임 설정
 	});
 
-	/** 게임방 초기화 **/
-	socket.emit("omok_init", {id:socket.id,doll_color:dollColor});
-
 	/** 돌 처리 **/
 	socket.on('doll_put',function(data){
 		var date = new Date();
-		var time;
-		if (date.getHours() <= 12) {
-			time = "오전 "+date.getHours()+":"+parseMinute(date.getMinutes());
-		}else {
-			time = "오후 "+(date.getHours()-12)+":"+parseMinute(date.getMinutes());
-		}
+		var time = getTime();
 
-		if(latestTurnId != socket.id){
-			io.sockets.in(socket.room).emit('doll_receive', {x:data.x,y:data.y,doll_color:data.doll_color,id:socket.id,time:time});
-			latestTurnId = socket.id;
+		if(rooms[socket.room].last_turn != data.doll_color){
+			io.sockets.in(socket.room).emit('doll_receive', {x:data.x,y:data.y,doll_color:data.doll_color,id:socket.id,username:socket.username,time:time});
+			rooms[socket.room].last_turn = data.doll_color;
 		}
 	});
 
 	/** 메시지 전송 처리 **/
 	socket.on("send_msg", function(data){
 		var date = new Date();
-		var time;
-		if (date.getHours() <= 12) {
-			time = "오전 "+date.getHours()+":"+parseMinute(date.getMinutes());
-		}else {
-			time = "오후 "+(date.getHours()-12)+":"+parseMinute(date.getMinutes());
-		}
+		var time = getTime();
 		io.sockets.in(socket.room).emit('broadcast_msg', {msg:data.msg,username:socket.username,type:"message",id:socket.id,time:time});
 	});
 
 	/** 접속 해제시 **/
 	socket.on('disconnect', function(){
-		console.log("socket disconnect");
+		console.log("socket disconnect current room : "+ socket.room);
+		if(socket.room != undefined && socket.room != "lobby"){
+			delete rooms[socket.room].user_list[socket.id];
+			io.sockets.in(socket.room).emit('broadcast_msg', {msg:socket.username+"님이 퇴장하였습니다.",type:"system",time:getTime()});
+
+			//게임상황 업데이트
+			rooms[socket.room].state = "stop";
+			io.sockets.in(socket.room).emit('state_game', {state:rooms[socket.room].state,time:getTime()});
+
+			//유저목록 업데이트
+			var userList = new Array();
+			for(var user in rooms[socket.room].user_list){
+				if (rooms[socket.room].user_list.hasOwnProperty(user)) {
+					userList.push(rooms[socket.room].user_list[user]);
+				}
+			}
+			io.sockets.in(socket.room).emit('user_list', {users:userList});
+
+			//유저가 아무도 없을시 방 없애기
+			if(Object.keys(rooms[socket.room].user_list).length == 0){
+				delete rooms[socket.room];
+				//방목록 업데이트
+				var roomList = new Array();
+				for(var room in rooms){
+					roomList.push(rooms[room]);
+				}
+				io.sockets.in('lobby').emit('list_room',{rooms:roomList});
+			}
+
+			socket.room = null;
+			socket.leave(socket.room);
+		}else if(socket.room != undefined && socket.room == "lobby"){
+			socket.room = null;
+			socket.leave("lobby");
+			lobbyCounter--;
+			io.sockets.in("lobby").emit('lobby_usercnt',{cnt:lobbyCounter});
+		}
 	});
 });
 
 io.on('disconnect',function(socket) {
 
 });
+
+function getTime(){
+	var date = new Date();
+	var time;
+	if (date.getHours() <= 12) {
+		time = "오전 "+date.getHours()+":"+parseMinute(date.getMinutes());
+	}else {
+		time = "오후 "+(date.getHours()-12)+":"+parseMinute(date.getMinutes());
+	}
+	return time;
+}
 
 function parseMinute(minute){
 	if(minute < 10) {

@@ -4,7 +4,7 @@ var express = require('express')
 
 exports.lobbyGet = function(req, res){
 	if(req.session.username){
-		res.render('lobby');
+		res.render('lobby', {username:req.session.username});
 	}else{
 		res.redirect('/');
 	}
@@ -13,8 +13,11 @@ exports.lobbyGet = function(req, res){
 exports.lobbyPost = function(req, res) {
 	if(req.body.username){
 		req.session.username = req.body.username;
-		console.log(req.session.username);
-		res.render('lobby');
+		if(req.body.gameUrl != ""){
+			res.redirect('/game/'+req.body.gameUrl);
+		}else{
+			res.render('lobby', {username:req.session.username});
+		}
 	}else{
 		res.redirect('/');
 	}

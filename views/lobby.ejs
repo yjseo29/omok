@@ -11,9 +11,8 @@
 	<link href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet">
 	<link href="css/global-style.css" rel="stylesheet">
 	<style type="text/css">
-		.nickname-input-wrap{
-			position: fixed;
-			z-index: 9999;
+		.wrap{
+			position: absolute;
 			background-color: #fff;
 			display: table;
 			width: 100%;
@@ -23,90 +22,162 @@
 			right: 0;
 			bottom: 0;
 		}
-		.nickname-input-inner{
+		.inner{
 			display: table-cell;
 			vertical-align: middle;
-			text-align: center;
 		}
-		.nickname-input-inner input{
-			border: 1px solid rgba(0, 0, 0, .20);
-			color: rgba(0, 0, 0, 1);
-			font-size: 17px;
-			height: 42px;
-			padding: 0 16px;
-			width: 245px;
-			border-radius: 4px;
+		.room{
+			width: 100%;
+			max-width: 700px;
+			margin: 0 auto;
+			position: relative;
+		}
+		.room > .room-header{
+			padding-bottom: 5px;
+			border-bottom: 1px solid #ddd;
+			position: relative;
+		}
+		.room > .room-header > h1{
+			color: #6A6E74;
+			font-size: 26px;
+			margin: 0;
+		}
+		.room > .room-header > button{
+			position: absolute;
+			top: -4px;
+			right: 0;
 			outline: none;
+			color: #fff;
+			text-shadow: 0 -1px 0 rgba(0, 0, 0, .2);
+			background-color: #6bb933;
+			border: 1px solid;
+			border-radius: 2px;
+			box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+			box-sizing: content-box;
+			border-color: #60a62e #519f18 #409701;
+			padding: 6px 12px;
 		}
-		.nickname-input-inner input:focus{
-			border: 1px solid #0084ff;
+		.room > .room-header .user-cnt{
+			margin-left: 16px;
+			right: 5px;
+			bottom: 5px;
+			font-size: 12px;
 		}
-		.logo-title{
-			font-family: 'Open Sans';
-			-webkit-font-smoothing: antialiased;
-			color: rgba(0, 0, 0, 1);
-			margin-bottom: 40px;
-			font-size: 45px;
-			font-weight: 300;
-			margin-top: 0;
-			margin-bottom: 28px;
+		.room-list{
+			list-style: none;
+			padding-left: 0;
+			margin: 0;
 		}
-		.logo-message{
-			color: #000;
+		.room-list > li{
+			position: relative;
+		}
+		.room-list > li.message{
+			padding: 45px 15px;
+			color: #969BA5;
 			font-size: 16px;
-			margin-bottom: 20px;
+			text-align: center;
+			background-color: #fff!important;
+		}
+		.room-list > li > a{
+			display: block;
+			padding: 30px 0;
+			color: #333;
+			text-decoration: none;
+			font-size: 16px;
+		}
+		.room-list > li > span{
+			position: absolute;
+			right: 8px;
+			top: 30px;
+			color: #aaa;
+			font-size: 12px;
+			pointer-events: none;
+		}
+		.room-list > li:hover{
+			background-color: #f4f4f4;
+		}
+
+		@media (max-width: 768px){
+			.wrap, .inner{
+				display: block;
+			}
+			.inner{
+				margin-top: 15px;
+			}
+			.room{
+				padding: 0 15px;
+			}
 		}
 	</style>
 </head>
 <body>
-<h1>Room List</h1>
-<ul class="room-list" id="roomList">
-
-</ul>
-<div>
-	<input type="text" id="title" name="title" placeholder="방제목">
-	<input type="password" id="passwd" name="passwd" placeholder="비공개 방 비밀번호">
-	<button type="button" onclick="createRoom()">확인</button>
+<div class="wrap">
+	<div class="inner">
+		<div class="room">
+			<div class="room-header">
+				<h1>방목록<span class="user-cnt">대기사용자 : <span id="userCnt">0</span>명</span></h1>
+				<button type="button" onclick="$('.modal').css('display','table');">방만들기</button>
+			</div>
+			<ul class="room-list" id="roomList"></ul>
+		</div>
+	</div>
+</div>
+<div class="modal">
+	<div class="modal-inner">
+		<div class="modal-content" style="text-align:center;">
+			<h1 class="title" style="text-align:left;">방만들기</h1>
+			<input class="form-control block" type="text" id="title" name="title" placeholder="방제목">
+			<input class="form-control block" style="margin-top:10px;" type="password" id="passwd" name="passwd" placeholder="비공개 방 비밀번호">
+			<button type="button" style="margin:25px 0;" class="btn-white" onclick="createRoom()">확인</button>
+		</div>
+	</div>
 </div>
 <script src="/js/jquery-1.11.0.min.js"></script>
 <script src="https://cdn.socket.io/socket.io-1.3.7.js"></script>
 <script type="text/javascript">
 	var socket = io();
 
-	socket.emit('join_lobby');
+	socket.emit('join_lobby', {"username": "<%= username %>"});
 
 	socket.on('list_room',function(data){
 		console.log(data);
 		$("#roomList").empty();
-		for(var i=0; i < data.rooms.length; i++ ){
-			$("#roomList").append("<li><a href='/game/"+data.rooms[i].url+"'>"+data.rooms[i].title+"</a></li>");
+		if(data.rooms.length != 0){
+			for(var i=0; i < data.rooms.length; i++ ){
+				$("#roomList").append("<li><a href='/game/"+data.rooms[i].url+"' title='"+data.rooms[i].title+"'>"+data.rooms[i].title+"</a><span class='username'>방장 : "+data.rooms[i].username+" / "+data.rooms[i].time+"</span></li>");
+			}
+		}else{
+			$("#roomList").append("<li class='message'>생성된 방이 없습니다</li>");
+		}
+
+	});
+
+	socket.on('res_create_room',function(data){
+		if(data.result){
+			location.href = "/game/"+data.url;
+		}else{
+			alert("방 생성에 실패하였습니다.\n다시 시도해주세요");
 		}
 	});
 
-	$(document).on("click", "#roomList > li", function(){
-
+	socket.on('lobby_usercnt',function(data){
+		$("#userCnt").html(data.cnt);
 	});
 
 	function createRoom(){
-		var url = makeUrl();
 		var data = {
-			"url": url,
+			"username" : "<%= username %>",
 			"title": $("#title").val(),
 			"passwd" : $("#passwd").val()
 		}
 		socket.emit('create_room', data);
-		setTimeout(function(){
-			location.href = "/game/"+url;
-		},500);
 	}
 
-	function makeUrl(){
-		var text = "";
-		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-		for( var i=0; i < 6; i++ ) text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-		return text;
-	}
+	$(document).on("click", ".modal-inner", function(e){
+		console.log($(e.target));
+		if( e.target !== this ) return;
+		$(this).parent().hide();
+	});
 </script>
 </body>
 </html>
