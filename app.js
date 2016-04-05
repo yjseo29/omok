@@ -122,6 +122,8 @@ io.on('connection',function(socket){
 		var url = data.url;
 
 		if(rooms[url] != undefined) {
+
+			if(Object.keys(rooms[url].user_list).length)
 			socket.room = url;
 			socket.join(url);
 			socket.username = data.username;
