@@ -29,19 +29,6 @@
 			vertical-align: middle;
 			text-align: center;
 		}
-		.nickname-input-inner input{
-			border: 1px solid rgba(0, 0, 0, .20);
-			color: rgba(0, 0, 0, 1);
-			font-size: 17px;
-			height: 42px;
-			padding: 0 16px;
-			width: 245px;
-			border-radius: 4px;
-			outline: none;
-		}
-		.nickname-input-inner input:focus{
-			border: 1px solid #0084ff;
-		}
 		.logo-title{
 			font-family: 'Open Sans';
 			-webkit-font-smoothing: antialiased;
@@ -70,7 +57,7 @@
 			<% }else{ %>
 				<p class="logo-message">게임에 참여하려면 이름을 입력해주세요</p>
 			<% } %>
-			<input type="text" placeholder="이름" id="username" name="username"><br>
+			<input type="text" class="form-control" placeholder="이름" id="username" name="username" maxlength="40"><br>
 			<button type="submit" style="margin-top:15px;color:#0084ff;border:0;outline:none;font-size:20px;background:#fff;">확인</button>
 		</form>
 	</div>

@@ -80,7 +80,7 @@
 		}
 		.room-list > li > a{
 			display: block;
-			padding: 30px 0;
+			padding: 30px 0 30px 10px;
 			color: #333;
 			text-decoration: none;
 			font-size: 16px;
@@ -116,18 +116,19 @@
 		<div class="room">
 			<div class="room-header">
 				<h1>방목록<span class="user-cnt">대기사용자 : <span id="userCnt">0</span>명</span></h1>
-				<button type="button" onclick="$('.modal').css('display','table');">방만들기</button>
+				<button type="button" onclick="$('#createRoomLayout').css('display','table');">방만들기</button>
 			</div>
 			<ul class="room-list" id="roomList"></ul>
 		</div>
 	</div>
 </div>
-<div class="modal">
+<div class="modal" id="createRoomLayout">
 	<div class="modal-inner">
 		<div class="modal-content" style="text-align:center;">
+			<button type="button" class="close" onclick="$('#createRoomLayout').hide()" title="닫기">×</button>
 			<h1 class="title" style="text-align:left;">방만들기</h1>
 			<input class="form-control block" type="text" id="title" name="title" placeholder="방제목">
-			<input class="form-control block" style="margin-top:10px;" type="password" id="passwd" name="passwd" placeholder="비공개 방 비밀번호">
+			<input class="form-control block" style="margin-top:10px;" type="password" id="password" name="password" placeholder="비공개 방 비밀번호">
 			<button type="button" style="margin:25px 0;" class="btn-white" onclick="createRoom()">확인</button>
 		</div>
 	</div>
@@ -139,19 +140,35 @@
 
 	socket.emit('join_lobby', {"username": "<%= username %>"});
 
+	//최초 방목록 가져오기
 	socket.on('list_room',function(data){
 		console.log(data);
 		$("#roomList").empty();
 		if(data.rooms.length != 0){
 			for(var i=0; i < data.rooms.length; i++ ){
-				$("#roomList").append("<li><a href='/game/"+data.rooms[i].url+"' title='"+data.rooms[i].title+"'>"+data.rooms[i].title+"</a><span class='username'>방장 : "+data.rooms[i].username+" / "+data.rooms[i].time+"</span></li>");
+				$("#roomList").append("<li data-url='"+data.rooms[i].url+"'><a href='/game/"+data.rooms[i].url+"' title='"+data.rooms[i].title+"'>"+data.rooms[i].title+"</a><span class='username'>방장 : "+data.rooms[i].username+" / "+data.rooms[i].time+"</span></li>");
 			}
 		}else{
-			$("#roomList").append("<li class='message'>생성된 방이 없습니다</li>");
+			$("#roomList").append("<li class='message'>생성된 방이 없습니다.</li>");
 		}
-
 	});
 
+	//새로 추가된 방 업데이트
+	socket.on('add_list_room',function(data){
+		console.log(data);
+		$("#roomList").children(".message").remove();
+		$("#roomList").append("<li data-url='"+data.room.url+"'><a href='/game/"+data.room.url+"' title='"+data.room.title+"'>"+data.room.title+"</a><span class='username'>방장 : "+data.room.username+" / "+data.room.time+"</span></li>");
+	});
+
+	//제거된 방 업데이트
+	socket.on('del_list_room',function(data){
+		$("#roomList").find("li[data-url='"+data.url+"']").remove();
+		if($("#roomList").children("li").length == 0){
+			$("#roomList").append("<li class='message'>생성된 방이 없습니다.</li>");
+		}
+	});
+
+	//방생성 결과 응답
 	socket.on('res_create_room',function(data){
 		if(data.result){
 			location.href = "/game/"+data.url;
@@ -160,15 +177,21 @@
 		}
 	});
 
+	//대기자수 업데이트
 	socket.on('lobby_usercnt',function(data){
 		$("#userCnt").html(data.cnt);
 	});
 
 	function createRoom(){
+		if($("#title").val() == ""){
+			alert("방제목을 입력해주세요");
+			$("#title").focus();
+			return;
+		}
 		var data = {
 			"username" : "<%= username %>",
 			"title": $("#title").val(),
-			"passwd" : $("#passwd").val()
+			"password" : $("#password").val()
 		}
 		socket.emit('create_room', data);
 	}

@@ -20,7 +20,58 @@
 			border-bottom: 1px solid #ddd;
 			padding: 15px 0;
 			text-align: center;
+			position: relative;
+		}
+		.board-header > .time{
 			font-size: 28px;
+		}
+		.board-header > .user{
+			position: absolute;
+			top: 12px;
+			padding-left: 45px;
+			line-height: 35px;
+		}
+		.board-header > .user.left{
+			left: 25px;
+		}
+		.board-header > .user.right{
+			right: 25px;
+		}
+		.board-header > .user > .name{
+			font-size: 20px;
+		}
+		.board-header > .user > .doll{
+			width: 35px;
+			height: 35px;
+			position: absolute;
+			top: 0;
+			left: 0;
+			-webkit-border-radius: 50%;
+			border-radius: 50%;
+			margin-right: 10px;
+			vertical-align: middle;
+		}
+		.board-header > .user > .doll.white{
+			background-image: -ms-radial-gradient(left top, circle farthest-corner, #F7F7F7 0%, #FFFFFF 100%);
+			background-image: -moz-radial-gradient(left top, circle farthest-corner, #F7F7F7 0%, #FFFFFF 100%);
+			background-image: -o-radial-gradient(left top, circle farthest-corner, #F7F7F7 0%, #FFFFFF 100%);
+			background-image: -webkit-gradient(radial, left top, 0, left top, 827, color-stop(0, #F7F7F7), color-stop(1, #FFFFFF));
+			background-image: -webkit-radial-gradient(left top, circle farthest-corner, #F7F7F7 0%, #FFFFFF 100%);
+			background-image: radial-gradient(circle farthest-corner at left top, #F7F7F7 0%, #FFFFFF 100%);
+			box-shadow: inset 0 0 8px #E8E8E8, 0px 0px 2px 1px #D4D4D4;
+			-moz-box-shadow: inset 0 0 8px #E8E8E8, 0px 0px 2px 1px #D4D4D4;
+			-webkit-box-shadow: inset 0 0 8px #E8E8E8, 0px 0px 2px 1px #D4D4D4;
+		}
+		.board-header > .user > .doll.black{
+			background-image: -ms-radial-gradient(left top, circle farthest-corner, #808080 0%, #000 100%);
+			background-image: -moz-radial-gradient(left top, circle farthest-corner, #808080 0%, #000 100%);
+			background-image: -o-radial-gradient(left top, circle farthest-corner, #808080 0%, #000 100%);
+			background-image: -webkit-gradient(radial, left top, 0, left top, 827, color-stop(0, #808080), color-stop(1, #000));
+			background-image: -webkit-radial-gradient(left top, circle farthest-corner, #808080 0%, #000 100%);
+			background-image: radial-gradient(circle farthest-corner at left top, #808080 0%, #000 100%);
+			box-shadow: inset 0 0 8px #808080, 0px 0px 2px 1px #000;
+			-moz-box-shadow: inset 0 0 8px #808080, 0px 0px 2px 1px #000;
+			-webkit-box-shadow: inset 0 0 8px #808080, 0px 0px 2px 1px #000;
 		}
 		.board-wrap{
 			background-color: #F8C91E;
@@ -57,14 +108,11 @@
 			border-bottom: 1px solid #000;
 		}
 		.board-wrap .doll{
-			width: 41px;
-			height: 41px;
+			width: 100%;
+			height: 100%;
 			border-radius: 50%;
 			position: absolute;
 			cursor: pointer;
-			-webkit-box-shadow: 0px 0px 20px -1px rgba(79,79,79,0.77);
-			-moz-box-shadow: 0px 0px 20px -1px rgba(79,79,79,0.77);
-			box-shadow: 0px 0px 20px -1px rgba(79,79,79,0.77);
 		}
 		.board-wrap .doll.ghost{
 			opacity: 0;
@@ -73,22 +121,38 @@
 			opacity: 1;
 		}
 		.board-wrap .doll.top{
-			top: -21px;
+			top: -50%;
 		}
 		.board-wrap .doll.bottom{
-			bottom: -21px;
+			bottom: -50%;
 		}
 		.board-wrap .doll.left{
-			left: -21px;
+			left: -50%;
 		}
 		.board-wrap .doll.right{
-			right: -21px;
+			right: -50%;
 		}
 		.board-wrap .doll.white{
-			background-color: #eee;
+			background-image: -ms-radial-gradient(left top, circle farthest-corner, #F7F7F7 0%, #FFFFFF 100%);
+			background-image: -moz-radial-gradient(left top, circle farthest-corner, #F7F7F7 0%, #FFFFFF 100%);
+			background-image: -o-radial-gradient(left top, circle farthest-corner, #F7F7F7 0%, #FFFFFF 100%);
+			background-image: -webkit-gradient(radial, left top, 0, left top, 827, color-stop(0, #F7F7F7), color-stop(1, #FFFFFF));
+			background-image: -webkit-radial-gradient(left top, circle farthest-corner, #F7F7F7 0%, #FFFFFF 100%);
+			background-image: radial-gradient(circle farthest-corner at left top, #F7F7F7 0%, #FFFFFF 100%);
+			box-shadow: inset 0 0 8px #E8E8E8, 0px 0px 2px 1px #D4D4D4;
+			-moz-box-shadow: inset 0 0 8px #E8E8E8, 0px 0px 2px 1px #D4D4D4;
+			-webkit-box-shadow: inset 0 0 8px #E8E8E8, 0px 0px 2px 1px #D4D4D4;
 		}
 		.board-wrap .doll.black{
-			background-color: #000;
+			background-image: -ms-radial-gradient(left top, circle farthest-corner, #808080 0%, #000 100%);
+			background-image: -moz-radial-gradient(left top, circle farthest-corner, #808080 0%, #000 100%);
+			background-image: -o-radial-gradient(left top, circle farthest-corner, #808080 0%, #000 100%);
+			background-image: -webkit-gradient(radial, left top, 0, left top, 827, color-stop(0, #808080), color-stop(1, #000));
+			background-image: -webkit-radial-gradient(left top, circle farthest-corner, #808080 0%, #000 100%);
+			background-image: radial-gradient(circle farthest-corner at left top, #808080 0%, #000 100%);
+			box-shadow: inset 0 0 8px #808080, 0px 0px 2px 1px #000;
+			-moz-box-shadow: inset 0 0 8px #808080, 0px 0px 2px 1px #000;
+			-webkit-box-shadow: inset 0 0 8px #808080, 0px 0px 2px 1px #000;
 		}
 		.chat{
 			position:absolute;
@@ -108,12 +172,14 @@
 		}
 		.chat-wrap > p{
 			color: #333;
+			word-break: break-all;
 		}
 		.chat-wrap > p.system{
 			color: #008000;
 		}
 		.chat-wrap > p > strong{
 			margin-right: 10px;
+			color: #0067C7;
 		}
 		.chat-wrap > p > .time{
 			color: #ccc;
@@ -220,10 +286,35 @@
 			.board{
 				width: 100%;
 				overflow: hidden;
+				margin-bottom: 50px;
 			}
 			.board-wrap{
 				margin: 0;
 				padding: 15px;
+			}
+			.board-header{
+				padding: 10px 0;
+			}
+			.board-header > .time{
+				font-size: 22px;
+			}
+			.board-header > .user{
+				top: 10px;
+				padding-left: 35px;
+				line-height: 25px;
+			}
+			.board-header > .user.left{
+				left: 5px;
+			}
+			.board-header > .user.right{
+				right: 5px;
+			}
+			.board-header > .user > .name{
+				font-size: 15px;
+			}
+			.board-header > .user > .doll{
+				width: 25px;
+				height: 25px;
 			}
 			.doll{
 				width: 100%;
@@ -233,13 +324,18 @@
 				top: inherit;
 				bottom: 0;
 				width: 100%;
-				height: 160px;
+				height: 130px;
 				position: fixed;
 				z-index: 9999;
 				padding-top: 0;
+				background: rgba(0, 0, 0, 0.25);
+				pointer-events: none;
 			}
 			.chat-wrap{
-				height: 160px;
+				height: 80px;
+			}
+			.chat-wrap > p > .time{
+				color: #E4E4E4;
 			}
 			.chat-message{
 				top: inherit;
@@ -266,6 +362,11 @@
 			.board{
 				min-height: 800px;
 			}
+			.board-wrap{
+				box-shadow: 0 2px 4px rgba(0, 0, 0, .3), 0 0 0 1px rgba(0, 0, 0, .1);
+				-moz-box-shadow: 0 2px 4px rgba(0, 0, 0, .3), 0 0 0 1px rgba(0, 0, 0, .1);
+				-webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, .3), 0 0 0 1px rgba(0, 0, 0, .1);
+			}
 		}
 	</style>
 </head>
@@ -273,7 +374,9 @@
 <div class="container">
 	<div class="board">
 		<div class="board-header">
-			<span id="timeMinute">00</span>:<span id="timeSecond">00</span>
+			<div class="user left" id="userBlack"></div>
+			<div class="user right" id="userWhite"></div>
+			<span id="timeMinute" class="time">00</span>:<span id="timeSecond" class="time">00</span>
 		</div>
 		<div class="board-wrap"></div>
 	</div>
@@ -558,14 +661,12 @@
 
 	/** 게임상황 처리 **/
 	socket.on('state_game', function(data){
-		if(data.state != "start"){
-			gameState = data.state;
+		gameState = data.state;
+		if(data.state == "stop"){
 			clearInterval(timeInterval);
 			$("#timeSecond").html("00");
 			$("#timeMinute").html("00");
-			if(data.state == "stop"){
-				var $message = $("<p class='system'>게임이 중지되었습니다.<span class='time'>"+data.time+"</span></p>");
-			}
+			var $message = $("<p class='system'>게임이 중지되었습니다.<span class='time'>"+data.time+"</span></p>");
 			$("#chat").append($message);
 			setTimeout(function(){
 				$message.fadeOut(function(){
@@ -573,7 +674,6 @@
 				});
 			},10000);
 		}else if(data.state == "start"){
-			gameState = data.state;
 			timeInterval = setInterval(function(){
 				var second = parseInt($("#timeSecond").text());
 				var minute = parseInt($("#timeMinute").text());
@@ -606,22 +706,41 @@
 
 	/** 방 초기화 **/
 	socket.on('init_game',function(data){
+		console.log(data);
 		if(data.result){
 			checkPageLeave = true;
 			dollColor = data.doll_color;
-			boardInit();
+			//boardInit();
 		}else{
-			alert("방 입장에 실패하였습니다.");
+			alert("존재하지 않는 방입니다.");
 			history.back();
 		}
 	});
 
-	/** 사용자 목록 처리 **/
-	socket.on('user_list',function(data){
-		console.log(data);
-		$("#userList").empty();
+	/** 사용자 목록 업데이트 **/
+	socket.on('room_user_list',function(data){
 		for(var i=0; i < data.users.length; i++){
-			$("#userList").append("<li>"+data.users[i].nickname+"<span class='doll "+data.users[i].type+"'></div></li>");
+			if(data.users[i].type == "black"){
+				$("#userBlack").html("<span class='doll black'></span><span class='name'>"+data.users[i].nickname+"</span>");
+			}else if(data.users[i].type == "white"){
+				$("#userWhite").html("<span class='doll white'></span><span class='name'>"+data.users[i].nickname+"</span>");
+			}
+		}
+
+	});
+
+	socket.on('disconnect', function(data){
+		alert("서버와 접속이 끊겼습니다.");
+		clearInterval(timeInterval);
+		location.href = "/";
+	});
+
+	/** 사용자 퇴장 처리 **/
+	socket.on('del_room_user',function(data){
+		if(data.type == "black"){
+			$("#userBlack").empty();
+		}else{
+			$("#userWhite").empty();
 		}
 	});
 

@@ -93,19 +93,15 @@ io.on('connection',function(socket){
 			rooms[url] = new Object();
 			rooms[url].title = data.title;
 			rooms[url].url = url;
-			rooms[url].last_turn = "";
-			rooms[url].passwd = data.passwd;
+			rooms[url].last_turn = "black";
+			rooms[url].password = data.password;
 			rooms[url].username = socket.username;
 			rooms[url].state = "ready";
 			rooms[url].time = getTime();
 			rooms[url].user_list = new Object();
 
-			//방목록 업데이트
-			var roomList = new Array();
-			for(var room in rooms){
-				roomList.push(rooms[room]);
-			}
-			io.sockets.in('lobby').emit('list_room',{rooms:roomList});
+			//클라이언트에게 추가된방 전송
+			io.sockets.in('lobby').emit('add_list_room',{room:rooms[url]});
 
 			//방생성 결과 응답
 			socket.emit('res_create_room', {result:true, url:url});
@@ -123,7 +119,8 @@ io.on('connection',function(socket){
 
 		if(rooms[url] != undefined) {
 
-			if(Object.keys(rooms[url].user_list).length)
+			if(rooms[url].state == "start")
+
 			socket.room = url;
 			socket.join(url);
 			socket.username = data.username;
@@ -149,14 +146,14 @@ io.on('connection',function(socket){
 			//게임상황 업데이트
 			io.sockets.in(url).emit('state_game', {state:rooms[url].state,time:getTime()});
 
-			//유저목록 업데이트
+			//유저목록 추가
 			var userList = new Array();
 			for(var user in rooms[url].user_list){
 				if (rooms[url].user_list.hasOwnProperty(user)) {
 					userList.push(rooms[url].user_list[user]);
 				}
 			}
-			io.sockets.in(url).emit('user_list', {users:userList});
+			io.sockets.in(url).emit('room_user_list', {users:userList});
 		}else{
 			console.log("!! 존재하지않는 방");
 			io.sockets.in(url).emit('init_game', {result:false});
@@ -195,31 +192,24 @@ io.on('connection',function(socket){
 	socket.on('disconnect', function(){
 		console.log("socket disconnect current room : "+ socket.room);
 		if(socket.room != undefined && socket.room != "lobby"){
-			delete rooms[socket.room].user_list[socket.id];
-			io.sockets.in(socket.room).emit('broadcast_msg', {msg:socket.username+"님이 퇴장하였습니다.",type:"system",time:getTime()});
 
 			//게임상황 업데이트
-			rooms[socket.room].state = "stop";
-			io.sockets.in(socket.room).emit('state_game', {state:rooms[socket.room].state,time:getTime()});
+			if(rooms[socket.room].user_list[socket.id].type == "black" || rooms[socket.room].user_list[socket.id].type == "white"){
+				rooms[socket.room].state = "stop";
+				io.sockets.in(socket.room).emit('state_game', {state:rooms[socket.room].state,time:getTime()});
+			}
 
 			//유저목록 업데이트
-			var userList = new Array();
-			for(var user in rooms[socket.room].user_list){
-				if (rooms[socket.room].user_list.hasOwnProperty(user)) {
-					userList.push(rooms[socket.room].user_list[user]);
-				}
-			}
-			io.sockets.in(socket.room).emit('user_list', {users:userList});
+			delete rooms[socket.room].user_list[socket.id];
+			io.sockets.in(socket.room).emit('del_room_user', {type:rooms[socket.room].user_list[socket.id].type});
+
+			io.sockets.in(socket.room).emit('broadcast_msg', {msg:socket.username+"님이 퇴장하였습니다.",type:"system",time:getTime()});
 
 			//유저가 아무도 없을시 방 없애기
 			if(Object.keys(rooms[socket.room].user_list).length == 0){
 				delete rooms[socket.room];
 				//방목록 업데이트
-				var roomList = new Array();
-				for(var room in rooms){
-					roomList.push(rooms[room]);
-				}
-				io.sockets.in('lobby').emit('list_room',{rooms:roomList});
+				io.sockets.in('lobby').emit('del_list_room',{url:socket.room});
 			}
 
 			socket.room = null;

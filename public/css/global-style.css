@@ -40,19 +40,19 @@ button:hover{
     cursor: pointer;
 }
 a:focus{ outline:none; } :focus{ outline-color: transparent; outline-style: none; }.btn:focus{ outline: none; outline-style: none; }select:focus,button:focus{ outline: none; outline-style: none; }
-::-webkit-input-placeholder {
+input::-webkit-input-placeholder {
     color: #bdc4c9;
 }
 
-:-moz-placeholder { /* Firefox 18- */
+input:-moz-placeholder { /* Firefox 18- */
     color: #bdc4c9;
 }
 
-::-moz-placeholder {  /* Firefox 19+ */
+input::-moz-placeholder {  /* Firefox 19+ */
     color: #bdc4c9;
 }
 
-:-ms-input-placeholder {
+input:-ms-input-placeholder {
     color: #bdc4c9;
 }
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
@@ -80,15 +80,32 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 .modal-content{
     border-radius: 3px;
     box-shadow: 0 2px 26px rgba(0, 0, 0, .3), 0 0 0 1px rgba(0, 0, 0, .1);
-    padding: 15px;
+    padding: 15px 25px;
     background: #fff;
     width: 100%;
     max-width: 400px;
     margin: 0 auto;
+    position: relative;
+}
+.modal-content > .close{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10000;
+    background-color: transparent;
+    border: 0;
+    font-size: 22px;
+    color: #000;
+    opacity: 0.6;
+    text-shadow: 0 1px 0 #fff;
+    padding: 0;
+}
+.modal-content > .close:hover{
+    opacity: 0.85;
 }
 .modal-content > .title{
     color: #4e5665;
-    font-weight: 400;
+    font-weight: 300;
     margin-bottom: 25px;
 }
 .form-control{
@@ -100,19 +117,23 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     width: 245px;
     border-radius: 4px;
     outline: none;
+    -webkit-transition:  border-color .3s ease-out;
+    -moz-transition:  border-color .3s ease-out;
+    -o-transition:  border-color .3s ease-out;
+    transition:  border-color .3s ease-out;
 }
 .form-control.block{
     width: 100%;
     display: block;
 }
 .form-control:focus{
-    border: 1px solid #0084ff;
+    border-color: #0084ff;
 }
 .btn-white{
     margin-top:15px;
     color:#0084ff;
     border:0;
     outline:none;
-    font-size:20px;
+    font-size:18px;
     background:#fff;
 }
