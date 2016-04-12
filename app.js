@@ -1,7 +1,7 @@
 var express = require('express')
   , path = require('path')
   , favicon = require('serve-favicon')
-  , logger = require('morgan')
+  //, logger = require('morgan')
   , cookieParser = require('cookie-parser')
   , bodyParser = require('body-parser')
   , routes = require('./routes/index')
@@ -15,7 +15,7 @@ app.set('view engine', 'ejs');
 
 // uncomment after placing your favicon in /public
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
+//app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -93,12 +93,35 @@ io.on('connection',function(socket){
 			rooms[url] = new Object();
 			rooms[url].title = data.title;
 			rooms[url].url = url;
-			rooms[url].last_turn = "black";
+			rooms[url].last_turn = "white";
 			rooms[url].password = data.password;
 			rooms[url].username = socket.username;
 			rooms[url].state = "ready";
+			rooms[url].white_state = "standby";
+			rooms[url].black_state = "standby";
 			rooms[url].time = getTime();
 			rooms[url].user_list = new Object();
+			rooms[url].board = new Array(
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","",""),
+				new Array("","","","","","","","","","","","","","","","","","","")
+			);
 
 			//클라이언트에게 추가된방 전송
 			io.sockets.in('lobby').emit('add_list_room',{room:rooms[url]});
@@ -113,14 +136,16 @@ io.on('connection',function(socket){
 		}
 	});
 
+	/** 게임 준비 요청 **/
+	socket.on("ready_game", function(data){
+		
+	});
+
 	/** 방 입장 **/
 	socket.on("join_room", function(data){
 		var url = data.url;
 
 		if(rooms[url] != undefined) {
-
-			if(rooms[url].state == "start")
-
 			socket.room = url;
 			socket.join(url);
 			socket.username = data.username;
@@ -136,15 +161,11 @@ io.on('connection',function(socket){
 				}else{
 					rooms[url].user_list[socket.id].type = "white";
 				}
-				rooms[url].state = "start";
 			}else{
 				rooms[url].user_list[socket.id].type = "viewer";
 			}
 			io.sockets.in(url).emit('broadcast_msg', {msg:socket.username+"님이 방에 입장하였습니다.",type:"system",time:getTime()});
-			socket.emit('init_game', {result:true,doll_color:rooms[url].user_list[socket.id].type});
-
-			//게임상황 업데이트
-			io.sockets.in(url).emit('state_game', {state:rooms[url].state,time:getTime()});
+			socket.emit('init_game', {result:true,doll_color:rooms[url].user_list[socket.id].type,board:rooms[url].board});
 
 			//유저목록 추가
 			var userList = new Array();
@@ -172,38 +193,33 @@ io.on('connection',function(socket){
 
 	/** 돌 처리 **/
 	socket.on('doll_put',function(data){
-		var date = new Date();
-		var time = getTime();
-
 		if(rooms[socket.room].last_turn != data.doll_color){
-			io.sockets.in(socket.room).emit('doll_receive', {x:data.x,y:data.y,doll_color:data.doll_color,id:socket.id,username:socket.username,time:time});
+			rooms[socket.room].board[data.x][data.y] = data.doll_color;
+			io.sockets.in(socket.room).emit('doll_receive', {x:data.x,y:data.y,doll_color:data.doll_color,id:socket.id,username:socket.username,time:getTime()});
 			rooms[socket.room].last_turn = data.doll_color;
 		}
 	});
 
 	/** 메시지 전송 처리 **/
 	socket.on("send_msg", function(data){
-		var date = new Date();
-		var time = getTime();
-		io.sockets.in(socket.room).emit('broadcast_msg', {msg:data.msg,username:socket.username,type:"message",id:socket.id,time:time});
+		io.sockets.in(socket.room).emit('broadcast_msg', {msg:data.msg,username:socket.username,type:"message",id:socket.id,time:getTime()});
 	});
 
 	/** 접속 해제시 **/
 	socket.on('disconnect', function(){
-		console.log("socket disconnect current room : "+ socket.room);
 		if(socket.room != undefined && socket.room != "lobby"){
 
 			//게임상황 업데이트
 			if(rooms[socket.room].user_list[socket.id].type == "black" || rooms[socket.room].user_list[socket.id].type == "white"){
 				rooms[socket.room].state = "stop";
-				io.sockets.in(socket.room).emit('state_game', {state:rooms[socket.room].state,time:getTime()});
+				io.sockets.in(socket.room).emit('state_game', {state:"stop",time:getTime()});
 			}
 
 			//유저목록 업데이트
-			delete rooms[socket.room].user_list[socket.id];
 			io.sockets.in(socket.room).emit('del_room_user', {type:rooms[socket.room].user_list[socket.id].type});
-
 			io.sockets.in(socket.room).emit('broadcast_msg', {msg:socket.username+"님이 퇴장하였습니다.",type:"system",time:getTime()});
+
+			delete rooms[socket.room].user_list[socket.id];
 
 			//유저가 아무도 없을시 방 없애기
 			if(Object.keys(rooms[socket.room].user_list).length == 0){
@@ -214,6 +230,7 @@ io.on('connection',function(socket){
 
 			socket.room = null;
 			socket.leave(socket.room);
+
 		}else if(socket.room != undefined && socket.room == "lobby"){
 			socket.room = null;
 			socket.leave("lobby");

@@ -78,6 +78,14 @@
 			text-align: center;
 			background-color: #fff!important;
 		}
+		.room-list > li.message > .icon{
+			display: block;
+			margin-bottom: 10px;
+			color: #ccc;
+		}
+		.room-list > li.message > .icon:before{
+			font-size: 40px;
+		}
 		.room-list > li > a{
 			display: block;
 			padding: 30px 0 30px 10px;
@@ -149,7 +157,7 @@
 				$("#roomList").append("<li data-url='"+data.rooms[i].url+"'><a href='/game/"+data.rooms[i].url+"' title='"+data.rooms[i].title+"'>"+data.rooms[i].title+"</a><span class='username'>방장 : "+data.rooms[i].username+" / "+data.rooms[i].time+"</span></li>");
 			}
 		}else{
-			$("#roomList").append("<li class='message'>생성된 방이 없습니다.</li>");
+			$("#roomList").append("<li class='message'><i class='ion-ios-search icon'></i>생성된 방이 없습니다.</li>");
 		}
 	});
 
@@ -164,12 +172,13 @@
 	socket.on('del_list_room',function(data){
 		$("#roomList").find("li[data-url='"+data.url+"']").remove();
 		if($("#roomList").children("li").length == 0){
-			$("#roomList").append("<li class='message'>생성된 방이 없습니다.</li>");
+			$("#roomList").append("<li class='message'><i class='ion-ios-search icon'></i>생성된 방이 없습니다.</li>");
 		}
 	});
 
 	//방생성 결과 응답
 	socket.on('res_create_room',function(data){
+		$("#title").val("");
 		if(data.result){
 			location.href = "/game/"+data.url;
 		}else{

@@ -108,8 +108,8 @@
 			border-bottom: 1px solid #000;
 		}
 		.board-wrap .doll{
-			width: 100%;
-			height: 100%;
+			width: 95%;
+			height: 95%;
 			border-radius: 50%;
 			position: absolute;
 			cursor: pointer;
@@ -190,7 +190,7 @@
 			position: absolute;
 			bottom: 0;
 			right: 0;
-			width: 399px;
+			width: 398px;
 			border-top: 1px solid #ddd;
 			padding: 10px 0;
 			background: #fff;
@@ -203,48 +203,23 @@
 			padding: 6px 12px;
 		}
 
-		.user-list{
+		.button-layout{
 			position: absolute;
-			top: 0;
+			top :0;
 			right: 0;
 			width: 399px;
-			padding: 0 15px;
-			background: #fff;
-			height: 170px;
-			overflow-y: auto;
-			border-bottom: 1px solid #ddd;
-		}
-		.user-list > ul{
-			margin: 0;
-			list-style: none;
-			padding-left: 0;
-		}
-		.user-list > ul > li{
-			position: relative;
-			padding: 10px 0 10px 40px;
-		}
-		.user-list > ul > li > span.doll{
-			position: absolute;
-			top: 5px;
-			left: 0;
-			width: 30px;
-			height: 30px;
-			border-radius: 50%;
-		}
-		.user-list > ul > li > span.doll.white{
-			background: #fff;
-			border: 1px solid #E3E3E3;
-		}
-		.user-list > ul > li > span.doll.black{
-			background: #000;
+			padding: 15px 0;
+			border: 1px solid #ddd;
 		}
 
 		.container{
 			position: relative;
 			max-width: 1250px;
 			width: 100%;
+			border-left: 1px solid #ddd;
 			border-bottom: 1px solid #ddd;
 			border-right: 1px solid #ddd;
+			margin: 0 auto;
 		}
 
 		.game-result-layer{
@@ -386,8 +361,9 @@
 	<div class="chat-message">
 		<input type="text" id="msgForm" placeholder="메시지를 입력하세요...">
 	</div>
-	<div class="user-list">
-		<ul id="userList"></ul>
+	<div class="button-layout">
+		<button type="button" onclick="gameReady()" id="btnReady" disabled="disabled"><i class="ion-ios-checkmark-outline"></i>준비</button>
+		<button type="button" onclick="leaveRoom()"><i class="ion-ios-undo-outline"></i>나가기</button>
 	</div>
 	<div style="display:table;clear:both;"></div>
 </div>
@@ -405,11 +381,8 @@
 	var turnCheck = true;
 	var gameState = "ready";
 
-	var nickname = "";
-
-	var lastDollPosition;
 	var dollColor = "";
-	var gameStats = new Array(
+	var boardStats = new Array(
 			new Array("","","","","","","","","","","","","","","","","","",""),
 			new Array("","","","","","","","","","","","","","","","","","",""),
 			new Array("","","","","","","","","","","","","","","","","","",""),
@@ -434,26 +407,29 @@
 	/** 진행시간 표시 **/
 	var timeInterval;
 
-	/** 보드판 판들기 **/
+	/** 보드판 그리기 **/
 	function boardInit(){
 		$(".board-wrap").empty();
+		var positionIndex = 1;
 		for(var x=0;x<18;x++){
-			var $boardRow = $("<div class='board-row'>");
+			var $boardRow = $("<div class='board-row' data-rows='"+(x+1)+"'>");
 			for(var y=0;y<18;y++){
-				if(y != 17){
-					if(x != 17){
-						$boardRow.append("<div class='board-cell'><div data-x='"+x+"' data-y='"+y+"' class='doll ghost top left "+dollColor+"'></div></div>");
+				if(x != 17){
+					if(y != 17){
+						$boardRow.append("<div class='board-cell'><div data-index ='"+positionIndex+"' data-x='"+x+"' data-y='"+y+"' class='doll ghost top left "+dollColor+"'></div></div>");
 					}else{
-						$boardRow.append("<div class='board-cell'><div data-x='"+x+"' data-y='"+y+"' class='doll ghost top left "+dollColor+"'></div><div data-x='18' data-y='"+y+"' class='doll ghost bottom left "+dollColor+"'></div></div>");
+						$boardRow.append("<div class='board-cell'><div data-index ='"+positionIndex+"' data-x='"+x+"' data-y='"+y+"' class='doll ghost top left "+dollColor+"'></div><div data-index ='"+(positionIndex+1)+"' data-x='"+x+"' data-y='18' class='doll ghost top right "+dollColor+"'></div></div>");
+						positionIndex++;
 					}
 				}else{
-					if(x != 17){
-						$boardRow.append("<div class='board-cell'><div data-x='" + x + "' data-y='" + y + "' class='doll ghost top left "+dollColor+"'></div><div data-x='" + x + "' data-y='18' class='doll ghost top right "+dollColor+"'></div></div>");
+					if(y != 17){
+						$boardRow.append("<div class='board-cell'><div data-index ='"+positionIndex+"' data-x='"+x+"' data-y='"+y+"' class='doll ghost top left "+dollColor+"'></div><div data-index ='"+(positionIndex+19)+"' data-x='18' data-y='"+y+"' class='doll ghost bottom left "+dollColor+"'></div></div>");
 					}else{
-						$boardRow.append("<div class='board-cell'><div data-x='" + x + "' data-y='" + y + "' class='doll ghost top left "+dollColor+"'></div><div data-x='18' data-y='"+y+"' class='doll ghost bottom left "+dollColor+"'></div><div data-x='" + x + "' data-y='18' class='doll ghost top right "+dollColor+"'></div><div data-x='18' data-y='18' class='doll ghost bottom right "+dollColor+"'></div></div>");
+						$boardRow.append("<div class='board-cell'><div data-index ='"+positionIndex+"' data-x='"+x+"' data-y='"+y+"' class='doll ghost top left "+dollColor+"'></div><div data-index ='"+(positionIndex+19)+"' data-x='18' data-y='"+y+"' class='doll ghost bottom left "+dollColor+"'></div><div data-index ='"+(positionIndex+1)+"' data-x='"+x+"' data-y='18' class='doll ghost top right "+dollColor+"'></div><div data-index ='"+(positionIndex+20)+"' data-x='18' data-y='18' class='doll ghost bottom right "+dollColor+"'></div></div>");
 					}
-					
 				}
+
+				positionIndex++;
 			}
 			$(".board-wrap").append($boardRow);
 		}
@@ -465,6 +441,55 @@
 		$("#gameResultLayer").css("display", "table").children(".doll").addClass(color);
 		$("#gameResultDoll").addClass(color);
 		$("#gameResultMessage").html(username+"님 승리!");
+	}
+
+	/** 돌 그리기 **/
+	function boardDollDraw(board){
+		console.log(board);
+		var index = 1;
+		for(var x=0; x < board.length; x++){
+			for(var y=0; y < board[x].length; y++){
+				if(board[x][y] != ""){
+					$(".board-wrap").find(".doll[data-index='"+index+"']").removeClass("ghost").addClass(board[x][y]);
+				}
+
+				index++;
+				/*console.log(board[x][y].length);
+				if(board[x][y] != ""){
+					if(x != 18){
+						if(y != 18){
+							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x][y]);
+						}else{
+							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").eq(1).removeClass("ghost").addClass(board[x][y]);
+						}
+					}else{
+						if(y != 18){
+							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x][y]);
+							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x+1][y]);
+						}else{
+							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x][y]);
+							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x+1][y+1]);
+							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x][y]);
+							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x+1][y+1]);
+						}
+					}
+				}*/
+
+			}
+		}
+	}
+
+	/** 게임 준비 **/
+	function gameReady(){
+		if(dollColor != ""){
+			alert(dollColor);
+			socket.emit('ready_game',{'url':'<%= url %>', 'doll_color': dollColor});
+		}
+	}
+
+	/** 방 나가기 **/
+	function leaveRoom(){
+		location.href = "/lobby";
 	}
 
 	/** 방 입장 **/
@@ -708,9 +733,14 @@
 	socket.on('init_game',function(data){
 		console.log(data);
 		if(data.result){
-			checkPageLeave = true;
 			dollColor = data.doll_color;
-			//boardInit();
+			boardInit();
+			if(data.doll_color == "viewer"){
+				boardDollDraw(boardStats);
+			}else{
+				checkPageLeave = true;
+				$("#btnReady").removeAttr("disabled");
+			}
 		}else{
 			alert("존재하지 않는 방입니다.");
 			history.back();
@@ -729,8 +759,9 @@
 
 	});
 
+	/** 소켓 접속 해제 처리 **/
 	socket.on('disconnect', function(data){
-		alert("서버와 접속이 끊겼습니다.");
+		alert("서버와의 접속이 끊겼습니다.");
 		clearInterval(timeInterval);
 		location.href = "/";
 	});
