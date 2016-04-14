@@ -12,7 +12,7 @@
 	<link href="/css/global-style.css" rel="stylesheet">
 	<style type="text/css">
 		.board{
-			width: 850px;
+			width: 100%;
 			float: left;
 			border-right: 1px solid #ddd;
 		}
@@ -160,12 +160,11 @@
 			top: 0;
 			width: 399px;
 			height: 100%;
-			padding-top: 170px;
+			padding-top: 62px;
 			padding-bottom: 52px;
 		}
 		.chat-wrap{
 			height: 100%;
-			padding-bottom: 55px;
 			overflow-y: auto;
 			overflow-x: hidden;
 			padding: 5px 10px;
@@ -190,7 +189,7 @@
 			position: absolute;
 			bottom: 0;
 			right: 0;
-			width: 398px;
+			width: 400px;
 			border-top: 1px solid #ddd;
 			padding: 10px 0;
 			background: #fff;
@@ -207,9 +206,40 @@
 			position: absolute;
 			top :0;
 			right: 0;
-			width: 399px;
-			padding: 15px 0;
-			border: 1px solid #ddd;
+			width: 400px;
+			height: 63px;
+			border-bottom: 1px solid #ddd;
+			white-space: nowrap;
+			overflow: hidden;
+		}
+		.button-layout > button{
+			width: 50%;
+			height: 62px;
+			border: 0;
+			font-size: 17px;
+			background: #fff;
+			-webkit-transition:  all .3s ease-out;
+			-moz-transition:  all .3s ease-out;
+			-o-transition:  all .3s ease-out;
+			transition:  all .3s ease-out;
+		}
+		.button-layout > button.on{
+			color: #3D820B;
+			background: #fff!important;
+		}
+		.button-layout > button:hover{
+			background: #F7F7F7;
+		}
+		.button-layout > button:disabled{
+			opacity: .5;
+			background: #fff!important;
+		}
+		.button-layout > button > i{
+			margin-right: 8px;
+			vertical-align: sub;
+		}
+		.button-layout > button > i:before{
+			font-size: 26px;
 		}
 
 		.container{
@@ -220,6 +250,7 @@
 			border-bottom: 1px solid #ddd;
 			border-right: 1px solid #ddd;
 			margin: 0 auto;
+			padding-right: 400px;
 		}
 
 		.game-result-layer{
@@ -256,12 +287,31 @@
 			font-weight: 300;
 			color: rgba(255, 255, 255, 0.95);
 		}
+		.game-result-inner > button{
+			font-size: 19px;
+			margin-top: 15px;
+			color: rgba(255, 255, 255, 0.85);
+			border: 0;
+			background: transparent;
+		}
 
 		@media (max-width: 768px){
+			.container{
+				padding-right: 0;
+			}
+			.button-layout{
+				width: 100%;
+				height: 45px;
+			}
+			.button-layout > button{
+				height: 45px;
+			}
 			.board{
 				width: 100%;
 				overflow: hidden;
 				margin-bottom: 50px;
+				margin-top: 45px;
+				border-right: 0;
 			}
 			.board-wrap{
 				margin: 0;
@@ -362,8 +412,8 @@
 		<input type="text" id="msgForm" placeholder="메시지를 입력하세요...">
 	</div>
 	<div class="button-layout">
-		<button type="button" onclick="gameReady()" id="btnReady" disabled="disabled"><i class="ion-ios-checkmark-outline"></i>준비</button>
-		<button type="button" onclick="leaveRoom()"><i class="ion-ios-undo-outline"></i>나가기</button>
+		<button type="button" onclick="gameReady()" id="btnReady" disabled="disabled"><i class="ion-ios-checkmark-outline"></i><span>준비</span></button>
+		<button type="button" onclick="leaveRoom()"><i class="ion-ios-undo-outline"></i><span>나가기</span></button>
 	</div>
 	<div style="display:table;clear:both;"></div>
 </div>
@@ -371,38 +421,17 @@
 	<div class="game-result-inner">
 		<div id="gameResultDoll" class="doll"></div>
 		<h1 id="gameResultMessage"></h1>
+		<button type="button" onclick="$('#gameResultLayer').hide()">확인</button>
 	</div>
 </div>
 <script src="/js/jquery-1.11.0.min.js"></script>
 <script src="https://cdn.socket.io/socket.io-1.3.7.js"></script>
 <script type="text/javascript">
-	var socket = io();
+	var socket = io("http://omok.yjteam.co.kr/");
 	var checkPageLeave = false;
 	var turnCheck = true;
 	var gameState = "ready";
-
 	var dollColor = "";
-	var boardStats = new Array(
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","",""),
-			new Array("","","","","","","","","","","","","","","","","","","")
-	);
 
 	/** 진행시간 표시 **/
 	var timeInterval;
@@ -445,45 +474,27 @@
 
 	/** 돌 그리기 **/
 	function boardDollDraw(board){
-		console.log(board);
 		var index = 1;
 		for(var x=0; x < board.length; x++){
 			for(var y=0; y < board[x].length; y++){
 				if(board[x][y] != ""){
 					$(".board-wrap").find(".doll[data-index='"+index+"']").removeClass("ghost").addClass(board[x][y]);
 				}
-
 				index++;
-				/*console.log(board[x][y].length);
-				if(board[x][y] != ""){
-					if(x != 18){
-						if(y != 18){
-							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x][y]);
-						}else{
-							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").eq(1).removeClass("ghost").addClass(board[x][y]);
-						}
-					}else{
-						if(y != 18){
-							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x][y]);
-							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x+1][y]);
-						}else{
-							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x][y]);
-							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x+1][y+1]);
-							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x][y]);
-							$(".board-wrap").children(".board-row").eq(x).children(".board-cell").eq(y).children(".doll").removeClass("ghost").addClass(board[x+1][y+1]);
-						}
-					}
-				}*/
-
 			}
 		}
 	}
 
 	/** 게임 준비 **/
 	function gameReady(){
-		if(dollColor != ""){
-			alert(dollColor);
-			socket.emit('ready_game',{'url':'<%= url %>', 'doll_color': dollColor});
+		if(dollColor != "" && gameState == "ready"){
+			if($("#btnReady").hasClass("on")){
+				$("#btnReady").removeClass("on");
+				socket.emit('ready_game',{'url':'<%= url %>', 'doll_color': dollColor, 'fn':'unReady'});
+			}else{
+				$("#btnReady").addClass("on");
+				socket.emit('ready_game',{'url':'<%= url %>', 'doll_color': dollColor, 'fn':'ready'});
+			}
 		}
 	}
 
@@ -495,159 +506,6 @@
 	/** 방 입장 **/
 	function joinRoom(){
 		socket.emit('join_room',{'url':'<%= url %>', 'username': '<%= username %>'});
-	}
-
-	function boardJudgment(x, y, color, username){
-		var goalCnt = 0;
-
-		//수평 오른쪽방향 검사 →
-		for(var i=0; i<19; i++){
-			if(typeof gameStats[x][y+i] != "undefined"){
-				if(gameStats[x][y+i] == color){
-					goalCnt++;
-				}else{
-					break;
-				}
-				if(goalCnt == 5){
-					if(gameStats[x][y-1] == color) break;
-					boardEnd(color, username);
-					break;
-					return false;
-				}
-			}
-		}
-
-		//수평 왼쪽방향 검사 ←
-		goalCnt = 0;
-		for(var i=0; i<19; i++){
-			if(typeof gameStats[x][y-i] != "undefined"){
-				if(gameStats[x][y-i] == color){
-					goalCnt++;
-				}else{
-					break;
-				}
-				if(goalCnt == 5){
-					if(gameStats[x][y+1] == color) break;
-					boardEnd(color, username);
-					break;
-					return false;
-				}
-			}
-		}
-
-		//수직 아래쪽방향 검사 ↓
-		goalCnt = 0;
-		for(var i=0; i<19; i++){
-			if(x == 18) break;
-			if(typeof gameStats[x+i][y] != "undefined"){
-				if(gameStats[x+i][y] == color){
-					goalCnt++;
-				}else{
-					break;
-				}
-				if(goalCnt == 5){
-					if(x != 0 && gameStats[x-1][y] == color) break;
-					boardEnd(color, username);
-					break;
-					return false;
-				}
-			}
-		}
-
-		//수직 위쪽방향 검사 ↑
-		goalCnt = 0;
-		for(var i=0; i<19; i++){
-			if(x-i < 0) break;
-			if(typeof gameStats[x-i][y] != "undefined"){
-				if(gameStats[x-i][y] == color){
-					goalCnt++;
-				}else{
-					break;
-				}
-				if(goalCnt == 5){
-					if(gameStats[x+1][y] == color) break;
-					boardEnd(color, username);
-					break;
-					return false;
-				}
-			}
-		}
-
-		//대각선 오른쪽 아래방향 검사 ↘
-		goalCnt = 0;
-		for(var i=0; i<19; i++){
-			if(y == 18 || x == 18) break;
-			if(typeof gameStats[x+i][y+i] != "undefined"){
-				if(gameStats[x+i][y+i] == color){
-					goalCnt++;
-				}else{
-					break;
-				}
-				if(goalCnt == 5){
-					if(gameStats[x-1][y-1] == color) break;
-					boardEnd(color, username);
-					break;
-					return false;
-				}
-			}
-		}
-
-		//대각선 오른쪽 위에방향 검사 ↗
-		goalCnt = 0;
-		for(var i=0; i<19; i++){
-			if(x-i < 0) break;
-			if(typeof gameStats[x-i][y+i] != "undefined"){
-				if(gameStats[x-i][y+i] == color){
-					goalCnt++;
-				}else{
-					break;
-				}
-				if(goalCnt == 5){
-					if(gameStats[x+1][y-1] == color) break;
-					boardEnd(color, username);
-					break;
-					return false;
-				}
-			}
-		}
-
-		//대각선 왼쪽 위에방향 검사 ↖
-		goalCnt = 0;
-		for(var i=0; i<19; i++) {
-			if (x - i < 0) break;
-			if (typeof gameStats[x - i][y - i] != "undefined") {
-				if (gameStats[x - i][y - i] == color) {
-					goalCnt++;
-				} else {
-					break;
-				}
-				if (goalCnt == 5) {
-					if(gameStats[x+1][y+1] == color) break;
-					boardEnd(color, username);
-					break;
-					return false;
-				}
-			}
-		}
-
-		//대각선 왼쪽 아래방향 검사 ↙
-		goalCnt = 0;
-		for(var i=0; i<19; i++){
-			if(x == 18 || y == 0) break;
-			if(typeof gameStats[x+i][y-i] != "undefined"){
-				if(gameStats[x+i][y-i] == color){
-					goalCnt++;
-				}else{
-					break;
-				}
-				if(goalCnt == 5){
-					if(gameStats[x-1][y+1] == color) break;
-					boardEnd(color, username);
-					break;
-					return false;
-				}
-			}
-		}
 	}
 
 	/** 페이지 나갈시 경고창 띄우기 **/
@@ -686,8 +544,10 @@
 
 	/** 게임상황 처리 **/
 	socket.on('state_game', function(data){
+		console.log(data);
 		gameState = data.state;
 		if(data.state == "stop"){
+			checkPageLeave = false;
 			clearInterval(timeInterval);
 			$("#timeSecond").html("00");
 			$("#timeMinute").html("00");
@@ -699,27 +559,36 @@
 				});
 			},10000);
 		}else if(data.state == "start"){
+			checkPageLeave = true;
+			boardInit();
 			timeInterval = setInterval(function(){
-				var second = parseInt($("#timeSecond").text());
 				var minute = parseInt($("#timeMinute").text());
+				var second = parseInt($("#timeSecond").text());
 				second++;
 				if(second == 60){
 					$("#timeSecond").html("00");
 					minute++;
-					if(minute < 10){
-						$("#timeMinute").html("0"+minute);
-					}else{
-						$("#timeMinute").html(minute);
-					}
+					minute = (minute>=10)?minute:"0"+minute;
+					$("#timeMinute").html(minute);
 				}else{
-					if(second < 10){
-						$("#timeSecond").html("0"+second);
-					}else{
-						$("#timeSecond").html(second);
-					}
+					second = (second>=10)?second:"0"+second;
+					$("#timeSecond").html(second);
 				}
 			},1000);
 			var $message = $("<p class='system'>게임이 시작되었습니다.<span class='time'>"+data.time+"</span></p>");
+			$("#chat").append($message);
+			setTimeout(function(){
+				$message.fadeOut(function(){
+					$message.remove();
+				});
+			},10000);
+		}else if(data.state == "end"){
+			if(dollColor != "viewer"){
+				$("#btnReady").removeClass("on");
+			}
+			boardEnd(data.doll_color, data.username);
+			gameState = "ready"
+			var $message = $("<p class='system' style='color:red;'>"+data.username+"님이 게임에서 승리하였습니다.<span class='time'>"+data.time+"</span></p>");
 			$("#chat").append($message);
 			setTimeout(function(){
 				$message.fadeOut(function(){
@@ -736,9 +605,38 @@
 			dollColor = data.doll_color;
 			boardInit();
 			if(data.doll_color == "viewer"){
-				boardDollDraw(boardStats);
+				if(data.state == "start"){
+					boardDollDraw(data.board);
+					var currentTime = new Date();
+					var startTime = new Date(data.start_time);
+					var progressTime = currentTime-startTime;
+
+					var hour = Math.floor(progressTime/(1000*60*60)%24);
+					var minute = Math.floor((progressTime/(1000*60))%60);
+					var second = Math.floor((progressTime/(1000))%60);
+					hour = (hour>=10)?hour:"0"+hour;
+					minute = (minute>=10)?minute:"0"+minute;
+					second = (second>=10)?second:"0"+second;
+
+					$("#timeMinute").html(minute);
+					$("#timeSecond").html(second);
+
+					timeInterval = setInterval(function(){
+						var minute = parseInt($("#timeMinute").text());
+						var second = parseInt($("#timeSecond").text());
+						second++;
+						if(second == 60){
+							$("#timeSecond").html("00");
+							minute++;
+							minute = (minute>=10)?minute:"0"+minute;
+							$("#timeMinute").html(minute);
+						}else{
+							second = (second>=10)?second:"0"+second;
+							$("#timeSecond").html(second);
+						}
+					},1000);
+				}
 			}else{
-				checkPageLeave = true;
 				$("#btnReady").removeAttr("disabled");
 			}
 		}else{
@@ -754,6 +652,8 @@
 				$("#userBlack").html("<span class='doll black'></span><span class='name'>"+data.users[i].nickname+"</span>");
 			}else if(data.users[i].type == "white"){
 				$("#userWhite").html("<span class='doll white'></span><span class='name'>"+data.users[i].nickname+"</span>");
+			}else{
+
 			}
 		}
 
@@ -766,12 +666,25 @@
 		location.href = "/";
 	});
 
+	/** 사용자 입장 처리 **/
+	socket.on('add_room_user',function(data){
+		if(data.user.type == "black"){
+			$("#userBlack").html("<span class='doll black'></span><span class='name'>"+data.user.nickname+"</span>")
+		}else if(data.user.type == "white"){
+			$("#userWhite").html("<span class='doll white'></span><span class='name'>"+data.user.nickname+"</span>");
+		}else{
+
+		}
+	});
+
 	/** 사용자 퇴장 처리 **/
 	socket.on('del_room_user',function(data){
-		if(data.type == "black"){
+		if(data.user.type == "black"){
 			$("#userBlack").empty();
-		}else{
+		}else if(data.user.type == "white"){
 			$("#userWhite").empty();
+		}else{
+
 		}
 	});
 
@@ -790,19 +703,24 @@
 				$cell = $(".board-wrap").children(".board-row").eq(data.x).children(".board-cell").eq(data.y-1).children(".doll").eq(1);
 			}
 		}
-		if($cell.hasClass("white")){
-			if(data.doll_color == "black"){
-				$cell.removeClass("white").addClass("black");
+		if(dollColor != "viewer"){
+			if($cell.hasClass("white")){
+				if(data.doll_color == "black"){
+					$cell.removeClass("white").addClass("black");
+				}
+				$cell.removeClass("ghost");
+			}else{
+				if(data.doll_color == "white"){
+					$cell.removeClass("black").addClass("white");
+				}
+				$cell.removeClass("ghost");
 			}
-			$cell.removeClass("ghost");
 		}else{
-			if(data.doll_color == "white"){
-				$cell.removeClass("black").addClass("white");
-			}
-			$cell.removeClass("ghost");
+			$cell.addClass(data.doll_color).removeClass("ghost");
 		}
-		gameStats[data.x][data.y] = data.doll_color;
-		boardJudgment(data.x, data.y, data.doll_color, data.username);
+
+		//gameStats[data.x][data.y] = data.doll_color;
+		//boardJudgment(data.x, data.y, data.doll_color, data.username);
 	});
 
 	/** 채팅메시지 처리 **/
