@@ -44,6 +44,70 @@
 			font-size: 16px;
 			margin-bottom: 20px;
 		}
+		.logo-image{
+			width: 100px;
+			margin: 0 auto 15px auto;
+			position: relative;
+		}
+		.logo-image > .line{
+			width: 1px;
+			height: 100%;
+			background-color: #000;
+			z-index: -1;
+			position: absolute;
+			top: 0;
+			margin-left: -0.5px;
+		}
+		.logo-image > .line.left{
+			left: 25%;
+		}
+		.logo-image > .line.right{
+			left: 75%;
+		}
+		.logo-image > .cell{
+			position: relative;
+			padding: 3px 0;
+		}
+		.logo-image > .cell:after{
+			content: " ";
+			display: table;
+			clear: both;
+		}
+		.logo-image > .cell:before{
+			content: " ";
+			display: inline-block;
+			position: absolute;
+			width: 106%;
+			height: 1px;
+			background-color: #000;
+			left: -3px;
+			top: 50%;
+			margin-top: -0.5px;
+			z-index: -1;
+		}
+		.logo-image .stone{
+			width: 46.5%;
+			border: 1px solid #eee;
+			content: " ";
+			padding-bottom: 44.8%;
+			display: inline-block;
+			border-radius: 50%;
+			z-index: 2;
+		}
+		.logo-image .stone.black{
+			background-color: #191919;
+			background-image: radial-gradient(circle farthest-corner at left top, #808080 0%, #000 100%);
+		}
+		.logo-image .stone.white{
+			background-color: #fff;
+			background-image: radial-gradient(circle farthest-corner at left top, #F7F7F7 0%, #FFFFFF 100%);
+		}
+		.logo-image .stone:first-child{
+			float: left;
+		}
+		.logo-image .stone:last-child{
+			float: right;
+		}
 	</style>
 </head>
 <body>
@@ -51,6 +115,18 @@
 	<div class="nickname-input-inner">
 		<form action="/lobby" method="post">
 			<input type="hidden" name="gameUrl" value="<%= gameUrl %>">
+			<div class="logo-image">
+				<div class="cell">
+					<span class="stone black"></span>
+					<span class="stone white"></span>
+				</div>
+				<div class="cell">
+					<span class="stone white"></span>
+					<span class="stone black"></span>
+				</div>
+				<div class="line left"></div>
+				<div class="line right"></div>
+			</div>
 			<h1 class="logo-title">Omok</h1>
 			<% if(gameUrl == null){ %>
 				<p class="logo-message">시작하려면 이름을 입력해주세요</p>
