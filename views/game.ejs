@@ -562,6 +562,8 @@
 		}else if(data.state == "start"){
 			checkPageLeave = true;
 			boardInit();
+			$("#timeMinute").html("00");
+			$("#timeSecond").html("00");
 			timeInterval = setInterval(function(){
 				var minute = parseInt($("#timeMinute").text());
 				var second = parseInt($("#timeSecond").text());
@@ -584,6 +586,7 @@
 				});
 			},10000);
 		}else if(data.state == "end"){
+			checkPageLeave = false;
 			if(dollColor != "viewer"){
 				$("#btnReady").removeClass("on");
 			}

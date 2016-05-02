@@ -38,7 +38,6 @@ var sharedsession = require("express-socket.io-session");
 app.use(session);
 
 var rooms = [];
-var lobbyCounter = 0;
 
 io.use(sharedsession(session));
 
@@ -76,13 +75,12 @@ io.on('connection',function(socket){
 		socket.username = data.username;
 		socket.room = "lobby";
 		socket.join("lobby");
-		lobbyCounter++;
 		var roomList = new Array();
 		for(var room in rooms){
 			roomList.push(rooms[room]);
 		}
 		io.sockets.in("lobby").emit('list_room',{rooms:roomList});
-		io.sockets.in("lobby").emit('lobby_usercnt',{cnt:lobbyCounter});
+		io.sockets.in("lobby").emit('lobby_usercnt',{cnt:io.sockets.adapter.rooms.lobby.length});
 	});
 
 	/** 방 생성 **/
@@ -307,51 +305,16 @@ io.on('connection',function(socket){
 			socket.leave(socket.room);
 
 		}else if(socket.room != undefined && socket.room == "lobby"){
-			socket.room = null;
 			socket.leave("lobby");
-			lobbyCounter--;
-			io.sockets.in("lobby").emit('lobby_usercnt',{cnt:lobbyCounter});
+			var lobbyCnt = 0;
+			if(io.sockets.adapter.rooms.lobby == undefined){
+				lobbyCnt = 0;
+			}else{
+				lobbyCnt = io.sockets.adapter.rooms.lobby.length;
+			}
+			io.sockets.in("lobby").emit('lobby_usercnt',{cnt:lobbyCnt});
 		}
 	});
-});
-
-io.on('disconnect',function(socket) {
-	if(socket.room != undefined && socket.room != "lobby"){
-
-		//유저목록 업데이트
-		io.sockets.in(socket.room).emit('del_room_user', {user:rooms[socket.room].user_list[socket.id],id:socket.id});
-		io.sockets.in(socket.room).emit('broadcast_msg', {msg:socket.username+"님이 퇴장하였습니다.",type:"system",time:getTime()});
-
-		//게임상황 업데이트
-		if(rooms[socket.room].user_list[socket.id].type == "black" || rooms[socket.room].user_list[socket.id].type == "white"){
-			rooms[socket.room].white_state = "standby";
-			rooms[socket.room].black_state = "standby";
-			rooms[socket.room].last_turn = "white";
-			if(rooms[socket.room].state != "ready"){
-				rooms[socket.room].state = "stop";
-				io.sockets.in(socket.room).emit('state_game', {state:"stop",time:getTime()});
-			}
-		}
-
-		delete rooms[socket.room].user_list[socket.id];
-
-		//유저가 아무도 없을시 방 없애기
-		if(Object.keys(rooms[socket.room].user_list).length == 0){
-			delete rooms[socket.room];
-			//방목록 업데이트
-			io.sockets.in('lobby').emit('del_list_room',{url:socket.room});
-		}
-
-
-		socket.room = null;
-		socket.leave(socket.room);
-
-	}else if(socket.room != undefined && socket.room == "lobby"){
-		socket.room = null;
-		socket.leave("lobby");
-		lobbyCounter--;
-		io.sockets.in("lobby").emit('lobby_usercnt',{cnt:lobbyCounter});
-	}
 });
 
 function getTime(){
